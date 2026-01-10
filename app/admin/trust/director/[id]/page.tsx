@@ -10,3 +10,5 @@ export default function AdminDirectorTrustPage() {
   return <TrustOverridePage userId={directorId} userRole="DIRECTOR" />;
 }
 
+
+

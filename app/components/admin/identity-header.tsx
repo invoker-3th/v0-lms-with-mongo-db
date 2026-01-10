@@ -13,6 +13,11 @@ type UserData = {
   trustLevel?: string;
   profileCompletion?: number;
   emailVerified?: Date;
+  frozen?: boolean;
+  shadowLimited?: boolean;
+  messagingDisabled?: boolean;
+  postingFrozen?: boolean;
+  highRisk?: boolean;
 };
 
 type IdentityHeaderProps = {
@@ -28,8 +33,24 @@ export default function IdentityHeader({ user, userRole }: IdentityHeaderProps) 
       badges.push({ label: "Verified", color: "bg-green-500/20 text-green-400 border-green-500/30" });
     }
     
-    if (userRole === "DIRECTOR" && user.trustScore && user.trustScore < 30) {
-      badges.push({ label: "High Risk", color: "bg-red-500/20 text-red-400 border-red-500/30" });
+    if (user.frozen) {
+      badges.push({ label: "FROZEN", color: "bg-red-500/20 text-red-400 border-red-500/30" });
+    }
+    
+    if (userRole === "TALENT" && user.shadowLimited) {
+      badges.push({ label: "Shadow-Limited", color: "bg-orange-500/20 text-orange-400 border-orange-500/30" });
+    }
+    
+    if (userRole === "DIRECTOR") {
+      if (user.highRisk) {
+        badges.push({ label: "High Risk", color: "bg-red-500/20 text-red-400 border-red-500/30" });
+      }
+      if (user.postingFrozen) {
+        badges.push({ label: "Posting Frozen", color: "bg-orange-500/20 text-orange-400 border-orange-500/30" });
+      }
+      if (user.messagingDisabled) {
+        badges.push({ label: "Messaging Disabled", color: "bg-orange-500/20 text-orange-400 border-orange-500/30" });
+      }
     }
     
     if (userRole === "TALENT" && user.verificationTier === "FEATURED") {
@@ -93,7 +114,9 @@ export default function IdentityHeader({ user, userRole }: IdentityHeaderProps) 
             </p>
             <p>
               <span className="text-white">Status:</span>{" "}
-              <span className="text-green-400">Active</span>
+              <span className={user.frozen ? "text-red-400" : "text-green-400"}>
+                {user.frozen ? "Frozen" : "Active"}
+              </span>
             </p>
           </div>
 

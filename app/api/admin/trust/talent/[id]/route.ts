@@ -72,6 +72,10 @@ export async function GET(
         verificationTier: user.verificationTier,
         profileCompletion: user.profileCompletion,
         emailVerified: user.emailVerified,
+        frozen: user.frozen,
+        shadowLimited: user.shadowLimited,
+        restrictionReason: user.restrictionReason,
+        restrictionExpiresAt: user.restrictionExpiresAt,
         createdAt: user.createdAt,
       },
       trustBreakdown,
@@ -106,4 +110,6 @@ export async function GET(
     );
   }
 }
+
+
 

@@ -79,8 +79,14 @@ export async function GET(
         image: user.image,
         role: user.role,
         trustScore: user.trustScore,
-        trustLevel: getTrustLevel(user.trustScore),
+        trustLevel: getTrustLevel(user.trustScore || 0),
         emailVerified: user.emailVerified,
+        frozen: user.frozen,
+        messagingDisabled: user.messagingDisabled,
+        postingFrozen: user.postingFrozen,
+        highRisk: user.highRisk,
+        restrictionReason: user.restrictionReason,
+        restrictionExpiresAt: user.restrictionExpiresAt,
         createdAt: user.createdAt,
       },
       trustBreakdown,
@@ -115,4 +121,6 @@ export async function GET(
     );
   }
 }
+
+
 

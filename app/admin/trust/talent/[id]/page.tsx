@@ -11,3 +11,5 @@ export default function AdminTalentTrustPage() {
   return <TrustOverridePage userId={talentId} userRole="TALENT" />;
 }
 
+
+

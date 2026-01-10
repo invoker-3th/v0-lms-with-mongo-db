@@ -90,23 +90,80 @@ export default function TrustOverridePage({ userId, userRole }: TrustOverridePag
     if (!action) return;
 
     try {
-      const res = await fetch("/api/admin/trust/override", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          targetUserId: userId,
-          ...action,
-        }),
-      });
+      // Use custom endpoint if provided (for freeze/unfreeze/restrictions)
+      const endpoint = (action as any).endpoint || "/api/admin/trust/override";
+      const method = (action as any).method || "POST";
+      
+      const body: any = {
+        targetUserId: userId,
+        ...action,
+      };
 
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-        // Refresh data
-        window.location.reload();
+      // Remove endpoint and method from body if present
+      delete body.endpoint;
+      delete body.method;
+
+      // For restrictions endpoint, use different body structure
+      if (endpoint.includes("/restrictions")) {
+        const restrictionType = action.metadata?.restrictionType;
+        const expiresAt = action.metadata?.expiresAt;
+        const isApplying = action.actionType === "RESTRICTION_APPLIED" || action.actionType === "FLAG_ADDED";
+        
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: isApplying ? "APPLY" : "REMOVE",
+            restrictionType,
+            reason: action.reason,
+            expiresAt,
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setUser({ ...user, ...data.user });
+          window.location.reload();
+        } else {
+          const error = await res.json();
+          alert(`Failed: ${error.error}`);
+        }
+      } else if (endpoint.includes("/freeze") || endpoint.includes("/unfreeze")) {
+        // Freeze/unfreeze endpoint
+        const expiresAt = action.metadata?.expiresAt;
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            reason: action.reason,
+            expiresAt,
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setUser({ ...user, ...data.user });
+          window.location.reload();
+        } else {
+          const error = await res.json();
+          alert(`Failed: ${error.error}`);
+        }
       } else {
-        const error = await res.json();
-        alert(`Failed: ${error.error}`);
+        // Standard trust override endpoint
+        const res = await fetch(endpoint, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setUser({ ...user, ...data.user });
+          window.location.reload();
+        } else {
+          const error = await res.json();
+          alert(`Failed: ${error.error}`);
+        }
       }
     } catch (error) {
       console.error("Failed to apply override:", error);
@@ -177,4 +234,6 @@ export default function TrustOverridePage({ userId, userRole }: TrustOverridePag
     </div>
   );
 }
+
+
 

@@ -1269,10 +1269,13 @@ The admin trust override system allows administrators to understand why users ha
    - Builds confidence and accountability
 
 4. **Trust Override Action Panel**
-   - **Change Trust Tier**: Select new tier with mandatory reason
+   - **Change Trust/Verification Tier**: Promote or demote tier with mandatory reason
    - **Override Trust Score**: Manually set trust score (directors only)
-   - **Apply Restrictions**: Freeze posting, disable messaging, etc. (coming soon)
-   - **Flags**: Internal flags for ranking logic (coming soon)
+   - **Freeze/Unfreeze Account**: Freeze user account temporarily or indefinitely
+   - **Apply Restrictions**: 
+     - For Talents: Shadow-limit (reduce visibility)
+     - For Directors: Freeze posting, disable messaging, flag as high risk
+   - All restrictions require reason and optional expiration date
 
 5. **Confirmation Flow**
    - Mandatory confirmation modal for all actions
@@ -1282,16 +1285,43 @@ The admin trust override system allows administrators to understand why users ha
 
 ### API Endpoints
 
-- `GET /api/admin/trust/talent/[id]` - Get talent trust data
-- `GET /api/admin/trust/director/[id]` - Get director trust data
-- `POST /api/admin/trust/override` - Apply trust override
+#### Trust Override
+- `GET /api/admin/trust/talent/[id]` - Get talent trust data (including verification data)
+- `GET /api/admin/trust/director/[id]` - Get director trust data (including trust breakdown)
+- `POST /api/admin/trust/override` - Apply trust/verification tier override
+- `POST /api/admin/users/[id]/freeze` - Freeze user account
+- `POST /api/admin/users/[id]/unfreeze` - Unfreeze user account
+- `POST /api/admin/users/[id]/restrictions` - Apply or remove restrictions (shadow-limit, disable messaging, freeze posting, flag high risk)
+- `GET /api/admin/users/[id]/profile` - View user profile (read-only, includes verification data for talents)
+
+#### Job Management
+- `GET /api/admin/jobs` - List all jobs (including hidden ones) with filters
+- `POST /api/admin/jobs/[id]/actions` - Admin job actions (close early, hide/unhide)
+- `GET /api/admin/jobs/[id]/applications` - View all applications for a job (read-only)
 
 ### Database Models
 
 **AuditLog Model** (`models/audit-log.ts`):
 - Tracks all admin actions
-- Fields: actorId, actorRole, targetUserId, actionType, beforeState, afterState, reason, metadata
+- Fields: actorId, actorRole, targetUserId, targetUserRole, targetJobId, actionType, beforeState, afterState, reason, metadata
+- Action types: TRUST_TIER_CHANGE, VERIFICATION_TIER_CHANGE, TRUST_SCORE_OVERRIDE, RESTRICTION_APPLIED, RESTRICTION_REMOVED, FLAG_ADDED, FLAG_REMOVED, ACCOUNT_FROZEN, ACCOUNT_UNFROZEN, JOB_CLOSED_EARLY, JOB_HIDDEN, JOB_UNHIDDEN, OTHER
 - Indexed for performance queries
+
+**User Model** (admin fields):
+- `frozen`: Boolean - Account frozen status
+- `shadowLimited`: Boolean - Reduced visibility (talent)
+- `messagingDisabled`: Boolean - Messaging disabled (director)
+- `postingFrozen`: Boolean - Job posting frozen (director)
+- `highRisk`: Boolean - High risk flag (internal, director)
+- `restrictionReason`: String - Reason for restriction
+- `restrictionExpiresAt`: Date - When restriction expires (null = indefinite)
+- `restrictedBy`: String - Admin ID who applied restriction
+
+**Job Model** (admin fields):
+- `hidden`: Boolean - Shadow-hidden by admin
+- `closedEarly`: Boolean - Closed early by admin
+- `adminActionReason`: String - Reason for admin action
+- `adminActionBy`: String - Admin ID who took action
 
 ### Security
 
@@ -1319,13 +1349,44 @@ The admin trust override system allows administrators to understand why users ha
 - `TrustOverridePanel` - Action panel for overrides
 - `ConfirmActionModal` - Mandatory confirmation modal
 
+### Admin Functions Implemented
+
+#### Talent Admin Functions
+- ✅ View talent profile (read-only) - Full visibility
+- ✅ View verification data - Docs, links, timestamps
+- ✅ Promote verification tier - Requires reason
+- ✅ Demote verification tier - Requires reason
+- ✅ Freeze talent account - Temporary with optional expiration
+- ✅ Shadow-limit talent - Reduced visibility
+- ❌ Ban talent - Escalation only (not implemented)
+- ❌ Edit profile fields - Never (not implemented)
+- ❌ Delete account - Never (not implemented)
+
+#### Director Admin Functions
+- ✅ View director profile - Read-only
+- ✅ View trust score breakdown - Signals + weights
+- ✅ Promote trust tier - Manual override
+- ✅ Demote trust tier - Manual override
+- ✅ Freeze posting ability - Jobs hidden
+- ✅ Disable messaging - Safety tool
+- ✅ Flag as "High Risk" - Internal only
+- ❌ Edit job content - Never (not implemented)
+- ❌ Post jobs - Never (not implemented)
+
+#### Job Admin Functions
+- ✅ View all jobs - Even hidden ones
+- ✅ View applications - Read-only
+- ✅ Close job early - Safety action
+- ✅ Hide job - Shadow-hide from public
+- ❌ Delete job - Audit risk (not implemented)
+- ❌ Modify applicant decisions - Director-owned (not implemented)
+
 ### Future Enhancements
 
-- Restrictions system (freeze posting, disable messaging, etc.)
-- Flags system (high risk, under review, repeat offender)
-- Duration-based restrictions (24h, 7 days, indefinite)
 - Moderation inbox for reported users
 - Bulk actions for multiple users
+- Advanced verification document management
+- Automated restriction expiration
 
 ---
 

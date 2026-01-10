@@ -65,13 +65,19 @@ export async function POST(req: Request) {
     }
 
     // Apply changes based on action type
-    let updatedUser = user;
-
-    if (actionType === "TRUST_TIER_CHANGE") {
+    if (actionType === "VERIFICATION_TIER_CHANGE" || actionType === "TRUST_TIER_CHANGE") {
       if (user.role === "TALENT" && afterState.verificationTier) {
         user.verificationTier = afterState.verificationTier;
-      } else if (user.role === "DIRECTOR" && afterState.trustScore !== undefined) {
-        user.trustScore = Math.max(0, Math.min(100, afterState.trustScore));
+      } else if (user.role === "DIRECTOR" && afterState.trustLevel) {
+        // For directors, trust level is derived from trust score
+        // Map trust level to approximate score range
+        const levelToScore: { [key: string]: number } = {
+          "NEW_DIRECTOR": 25,
+          "TRUSTED_DIRECTOR": 60,
+          "VERIFIED_STUDIO": 90,
+        };
+        const targetScore = levelToScore[afterState.trustLevel] || user.trustScore || 0;
+        user.trustScore = Math.max(0, Math.min(100, targetScore));
       }
     } else if (actionType === "TRUST_SCORE_OVERRIDE") {
       if (user.role === "DIRECTOR" && afterState.trustScore !== undefined) {
@@ -101,16 +107,29 @@ export async function POST(req: Request) {
       metadata,
     });
 
+    const finalUser = await User.findById(targetUserId);
+    if (!finalUser) {
+      return NextResponse.json(
+        { error: "User not found after update" },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       user: {
-        _id: updatedUser?._id.toString(),
-        email: updatedUser?.email,
-        name: updatedUser?.name,
-        role: updatedUser?.role,
-        verificationTier: updatedUser?.verificationTier,
-        trustScore: updatedUser?.trustScore,
-        trustLevel: updatedUser?.role === "DIRECTOR" ? getTrustLevel(updatedUser.trustScore) : null,
+        _id: finalUser._id.toString(),
+        email: finalUser.email,
+        name: finalUser.name,
+        role: finalUser.role,
+        verificationTier: finalUser.verificationTier,
+        trustScore: finalUser.trustScore,
+        trustLevel: finalUser.role === "DIRECTOR" ? getTrustLevel(finalUser.trustScore || 0) : null,
+        frozen: finalUser.frozen,
+        shadowLimited: finalUser.shadowLimited,
+        messagingDisabled: finalUser.messagingDisabled,
+        postingFrozen: finalUser.postingFrozen,
+        highRisk: finalUser.highRisk,
       },
     });
   } catch (error: any) {
@@ -133,4 +152,6 @@ export async function POST(req: Request) {
     );
   }
 }
+
+
 

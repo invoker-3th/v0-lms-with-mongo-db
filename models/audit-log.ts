@@ -14,13 +14,18 @@ const AuditLogSchema = new mongoose.Schema(
     },
     targetUserId: {
       type: String,
-      required: true,
+      required: false,
       index: true,
     },
     targetUserRole: {
       type: String,
       enum: ["TALENT", "DIRECTOR"],
-      required: true,
+      required: false,
+    },
+    targetJobId: {
+      type: String,
+      required: false,
+      index: true,
     },
     actionType: {
       type: String,
@@ -34,6 +39,10 @@ const AuditLogSchema = new mongoose.Schema(
         "ACCOUNT_FROZEN",
         "ACCOUNT_UNFROZEN",
         "PROFILE_EDITED",
+        "JOB_CLOSED_EARLY",
+        "JOB_HIDDEN",
+        "JOB_UNHIDDEN",
+        "VERIFICATION_TIER_CHANGE",
         "OTHER",
       ],
       required: true,
@@ -65,4 +74,6 @@ AuditLogSchema.index({ actorId: 1, createdAt: -1 });
 AuditLogSchema.index({ actionType: 1, createdAt: -1 });
 
 export default mongoose.models.AuditLog || mongoose.model("AuditLog", AuditLogSchema);
+
+
 

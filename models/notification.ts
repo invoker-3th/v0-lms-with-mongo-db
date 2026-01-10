@@ -40,3 +40,5 @@ NotificationSchema.index({ userId: 1, createdAt: -1 });
 
 export default mongoose.models.Notification || mongoose.model("Notification", NotificationSchema);
 
+
+

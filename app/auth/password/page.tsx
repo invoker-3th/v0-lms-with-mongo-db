@@ -107,6 +107,12 @@ export default function PasswordLoginPage() {
         </form>
 
         <div className="mt-6 text-center space-y-2">
+          <p className="text-sm text-[var(--text-secondary)]">
+            Don't have an account?{" "}
+            <Link href="/signup" className="text-[var(--accent-gold)] hover:underline font-body">
+              Sign Up
+            </Link>
+          </p>
           <button
             onClick={() => router.push("/auth/forgot-password")}
             className="block w-full text-sm text-[var(--text-secondary)] hover:text-white transition font-body"
