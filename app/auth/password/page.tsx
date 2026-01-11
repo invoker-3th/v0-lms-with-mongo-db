@@ -29,32 +29,34 @@ export default function PasswordLoginPage() {
       if (result?.error) {
         setError("Invalid email or password");
       } else if (result?.ok) {
-        // Fetch session to determine user role for redirect
-        try {
-          const sessionRes = await fetch("/api/auth/session");
-          if (sessionRes.ok) {
-            const session = await sessionRes.json();
-            const userRole = session?.user?.role;
-            
-            // Redirect based on role
-            if (userRole === "ADMIN") {
-              router.push("/admin/jobs");
-            } else if (userRole === "DIRECTOR") {
-              router.push("/director/dashboard");
-            } else if (userRole === "TALENT") {
-              router.push("/talent/dashboard");
+        // Wait a bit for session to be established, then fetch and redirect
+        setTimeout(async () => {
+          try {
+            const sessionRes = await fetch("/api/auth/session", {
+              cache: "no-store",
+            });
+            if (sessionRes.ok) {
+              const session = await sessionRes.json();
+              const userRole = session?.user?.role;
+              
+              // Redirect based on role
+              if (userRole === "ADMIN") {
+                window.location.href = "/admin/jobs";
+              } else if (userRole === "DIRECTOR") {
+                window.location.href = "/director/dashboard";
+              } else if (userRole === "TALENT") {
+                window.location.href = "/talent/dashboard";
+              } else {
+                window.location.href = "/";
+              }
             } else {
-              router.push("/");
+              window.location.href = "/";
             }
-          } else {
-            router.push("/");
+          } catch (sessionError) {
+            // If session fetch fails, redirect to home
+            window.location.href = "/";
           }
-          router.refresh();
-        } catch (sessionError) {
-          // If session fetch fails, redirect to home
-          router.push("/");
-          router.refresh();
-        }
+        }, 500);
       }
     } catch (err) {
       setError("Something went wrong. Please try again.");

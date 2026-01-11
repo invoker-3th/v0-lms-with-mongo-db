@@ -48,19 +48,19 @@ export default function JobCard({ job, onClick, onEdit }: JobCardProps) {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60" />
 
       {/* Content */}
-      <div className="relative z-10 p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h3 className="text-xl text-white mb-2 group-hover:text-[var(--accent-gold)] transition">
+      <div className="relative z-10 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg sm:text-xl text-white mb-2 group-hover:text-[var(--accent-gold)] transition break-words">
               {job.title}
             </h3>
-            <p className="text-sm text-[var(--text-secondary)]">
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)] break-words">
               {job.type} · {job.location}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <span
-              className={`px-3 py-1 text-xs rounded ${
+              className={`px-2 sm:px-3 py-1 text-xs rounded whitespace-nowrap ${
                 job.status === "open"
                   ? "bg-[var(--accent-gold)]/20 text-[var(--accent-gold)] border border-[var(--accent-gold)]/30"
                   : "bg-white/10 text-[var(--text-secondary)] border border-white/10"
@@ -74,7 +74,7 @@ export default function JobCard({ job, onClick, onEdit }: JobCardProps) {
                   e.stopPropagation();
                   onEdit();
                 }}
-                className="px-2 py-1 text-xs border border-white/20 text-white rounded hover:bg-white/10 transition"
+                className="px-2 py-1 text-xs border border-white/20 text-white rounded hover:bg-white/10 transition whitespace-nowrap"
                 aria-label="Edit job"
               >
                 Edit
@@ -83,19 +83,19 @@ export default function JobCard({ job, onClick, onEdit }: JobCardProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm mb-4">
           <div>
             <p className="text-[var(--text-secondary)] mb-1">Budget</p>
-            <p className="text-white">{job.budget}</p>
+            <p className="text-white break-words">{job.budget || "Not specified"}</p>
           </div>
           <div>
             <p className="text-[var(--text-secondary)] mb-1">Deadline</p>
-            <p className="text-white">{job.deadline}</p>
+            <p className="text-white break-words">{job.deadline || "Not specified"}</p>
           </div>
         </div>
 
-        <div className="pt-4 border-t border-white/10">
-          <p className="text-sm text-[var(--text-secondary)]">
+        <div className="pt-3 sm:pt-4 border-t border-white/10">
+          <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
             <span className="text-white font-medium">{job.applicationCount}</span>{" "}
             {job.applicationCount === 1 ? "application" : "applications"}
           </p>

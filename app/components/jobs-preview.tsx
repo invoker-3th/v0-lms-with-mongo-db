@@ -124,15 +124,15 @@ export default function JobsPreview() {
                       setSelectedJob(job);
                     }
                   }}
-                  className={`group py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 ${
+                  className={`group py-4 sm:py-6 md:py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 ${
                     hasApplied 
                       ? "cursor-not-allowed opacity-60" 
                       : "cursor-pointer"
                   }`}
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className={`text-xl text-white transition ${
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                      <h3 className={`text-lg sm:text-xl text-white transition break-words ${
                         hasApplied 
                           ? "" 
                           : "group-hover:text-[var(--accent-gold)]"
@@ -140,25 +140,25 @@ export default function JobsPreview() {
                         {job.title}
                       </h3>
                       {hasApplied && (
-                        <span className="px-2 py-1 text-xs bg-[var(--accent-gold)]/20 text-[var(--accent-gold)] border border-[var(--accent-gold)]/30 rounded">
+                        <span className="px-2 py-1 text-xs bg-[var(--accent-gold)]/20 text-[var(--accent-gold)] border border-[var(--accent-gold)]/30 rounded self-start sm:self-center whitespace-nowrap">
                           Applied
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-[var(--text-secondary)]">
+                    <p className="text-xs sm:text-sm text-[var(--text-secondary)] break-words">
                       {job.type} · {job.location}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-10">
-                    <div className="text-sm text-[var(--text-secondary)] hidden sm:block">
+                  <div className="flex items-center gap-4 sm:gap-6 md:gap-10 flex-shrink-0">
+                    <div className="text-xs sm:text-sm text-[var(--text-secondary)] hidden sm:block whitespace-nowrap">
                       {job.budget}
                     </div>
-                    <div className="text-sm text-[var(--text-secondary)]">
+                    <div className="text-xs sm:text-sm text-[var(--text-secondary)] whitespace-nowrap">
                       {job.deadline}
                     </div>
                     {!hasApplied && (
-                      <span className="text-sm text-white group-hover:translate-x-1 transition">
+                      <span className="text-sm text-white group-hover:translate-x-1 transition hidden sm:inline-block">
                         →
                       </span>
                     )}

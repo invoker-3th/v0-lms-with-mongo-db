@@ -18,17 +18,17 @@ export default function Header() {
       transition={{ duration: 1, ease: "easeOut" }}
       className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-black/40 border-b border-[var(--border-subtle)]"
     >
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">
         {/* Logo */}
         <Link
           href="/"
-          className="font-heading text-xl tracking-wide text-white"
+          className="font-heading text-lg sm:text-xl tracking-wide text-white flex-shrink-0"
         >
           Hub<span className="text-[var(--accent-gold)]">Movies</span>
         </Link>
 
         {/* Navigation */}
-        <nav className="hidden md:flex items-center gap-8 text-sm tracking-wide">
+        <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-sm tracking-wide">
           <Link href="/jobs" className="text-[var(--text-secondary)] hover:text-white transition">
             Jobs
           </Link>
@@ -44,32 +44,32 @@ export default function Header() {
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           {status === "loading" ? (
-            <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/10 animate-pulse" />
           ) : session?.user ? (
             <>
               <NotificationBell />
               {/* User Menu */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {user?.role === "ADMIN" ? (
-                  <span className="text-sm text-white font-medium">Welcome Admin</span>
+                  <span className="text-xs sm:text-sm text-white font-medium">Welcome Admin</span>
                 ) : (
                   <>
                     {user?.image ? (
                       <img
                         src={user.image}
                         alt={user.name || "User"}
-                        className="w-8 h-8 rounded-full border border-white/20"
+                        className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-white/20"
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-[var(--accent-gold)]/20 border border-[var(--accent-gold)]/30 flex items-center justify-center">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[var(--accent-gold)]/20 border border-[var(--accent-gold)]/30 flex items-center justify-center flex-shrink-0">
                         <span className="text-[var(--accent-gold)] text-xs font-medium">
                           {(user?.name || user?.email || "U")[0].toUpperCase()}
                         </span>
                       </div>
                     )}
-                    <span className="text-sm text-white font-medium hidden md:block">
+                    <span className="text-xs sm:text-sm text-white font-medium hidden sm:block max-w-[100px] truncate">
                       {user?.name || user?.email?.split("@")[0] || "User"}
                     </span>
                   </>
@@ -81,7 +81,7 @@ export default function Header() {
                       router.refresh();
                     });
                   }}
-                  className="text-sm text-[var(--text-secondary)] hover:text-white transition"
+                  className="text-xs sm:text-sm text-[var(--text-secondary)] hover:text-white transition"
                 >
                   Sign Out
                 </button>
@@ -90,21 +90,21 @@ export default function Header() {
               {user?.role === "ADMIN" ? (
                 <Link
                   href="/admin/jobs"
-                  className="text-sm text-[var(--text-secondary)] hover:text-white transition hidden md:block"
+                  className="text-xs sm:text-sm text-[var(--text-secondary)] hover:text-white transition hidden lg:block"
                 >
                   Admin Dashboard
                 </Link>
               ) : user?.role === "DIRECTOR" ? (
                 <Link
                   href="/director/dashboard"
-                  className="text-sm text-[var(--text-secondary)] hover:text-white transition hidden md:block"
+                  className="text-xs sm:text-sm text-[var(--text-secondary)] hover:text-white transition hidden lg:block"
                 >
                   Dashboard
                 </Link>
               ) : (
                 <Link
                   href="/talent/dashboard"
-                  className="text-sm text-[var(--text-secondary)] hover:text-white transition hidden md:block"
+                  className="text-xs sm:text-sm text-[var(--text-secondary)] hover:text-white transition hidden lg:block"
                 >
                   Dashboard
                 </Link>
@@ -115,13 +115,13 @@ export default function Header() {
               <NotificationBell />
               <Link
                 href="/auth/password"
-                className="text-sm text-[var(--text-secondary)] hover:text-white transition"
+                className="text-xs sm:text-sm text-[var(--text-secondary)] hover:text-white transition"
               >
                 Sign In
               </Link>
               <Link
                 href="/signup"
-                className="px-4 py-2 border border-[var(--accent-gold)] text-[var(--accent-gold)] text-sm hover:bg-[var(--accent-gold)] hover:text-black transition"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 border border-[var(--accent-gold)] text-[var(--accent-gold)] text-xs sm:text-sm hover:bg-[var(--accent-gold)] hover:text-black transition whitespace-nowrap"
               >
                 Get Started
               </Link>

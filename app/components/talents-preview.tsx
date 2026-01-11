@@ -106,14 +106,14 @@ export default function TalentsPreview() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10"
           >
             {talents.map((talent) => (
               <motion.div
                 key={talent.id}
                 variants={item}
                 onClick={() => setSelectedTalent(talent)}
-                className="group cursor-pointer"
+                className="group cursor-pointer bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:border-white/20 transition-all"
               >
                 {/* Portrait */}
                 <div className="relative aspect-[3/4] overflow-hidden bg-black">
@@ -124,16 +124,26 @@ export default function TalentsPreview() {
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition" />
+                  {talent.verified && (
+                    <span className="absolute top-2 right-2 px-2 py-1 bg-green-500/20 text-green-400 text-xs font-medium rounded-full border border-green-500/30">
+                      Verified
+                    </span>
+                  )}
                 </div>
 
                 {/* Info */}
-                <div className="mt-4">
-                  <h3 className="text-lg text-white mb-1 group-hover:text-[var(--accent-gold)] transition">
+                <div className="p-4">
+                  <h3 className="text-base sm:text-lg text-white mb-1 group-hover:text-[var(--accent-gold)] transition break-words">
                     {talent.name}
                   </h3>
-                  <p className="text-sm text-[var(--text-secondary)]">
+                  <p className="text-xs sm:text-sm text-[var(--text-secondary)] break-words">
                     {talent.role} · {talent.location}
                   </p>
+                  {talent.bio && (
+                    <p className="text-xs text-[var(--text-secondary)] mt-2 line-clamp-2 hidden sm:block">
+                      {talent.bio}
+                    </p>
+                  )}
                 </div>
               </motion.div>
             ))}
