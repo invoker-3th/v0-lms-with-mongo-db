@@ -18,8 +18,13 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Admin routes require admin role
+  // Admin routes require admin role (except setup page)
   if (path.startsWith("/admin") || path.startsWith("/api/admin")) {
+    // Allow access to admin setup page without authentication
+    if (path === "/admin/setup" || path === "/api/admin/setup") {
+      return NextResponse.next();
+    }
+
     if (!token) {
       return NextResponse.redirect(new URL("/auth", req.url));
     }
