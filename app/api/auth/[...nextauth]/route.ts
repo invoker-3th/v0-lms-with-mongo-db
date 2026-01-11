@@ -61,7 +61,7 @@ export const authOptions: NextAuthConfig = {
     }),
   ],
   session: {
-    strategy: "database",
+    strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
@@ -70,27 +70,43 @@ export const authOptions: NextAuthConfig = {
     error: "/auth/error",
   },
   callbacks: {
-    async session({ session, user }) {
-      if (session.user && user) {
-        await connectDB();
-        const dbUser = await User.findById(user.id);
-        if (dbUser) {
-          (session.user as any).id = user.id;
-          (session.user as any).role = dbUser.role;
-          (session.user as any).emailVerified = !!dbUser.emailVerified;
-        }
-      }
-      return session;
-    },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
+      // Initial sign in - user object is available
       if (user) {
         await connectDB();
         const dbUser = await User.findById(user.id);
         if (dbUser) {
+          token.id = dbUser._id.toString();
           token.role = dbUser.role;
+          token.emailVerified = !!dbUser.emailVerified;
+        } else {
+          // Fallback to user data from authorize function
+          token.id = user.id;
+          token.role = (user as any).role;
+          token.emailVerified = (user as any).emailVerified || false;
         }
       }
+      
+      // Update token with fresh user data on each request
+      if (token.id) {
+        await connectDB();
+        const dbUser = await User.findById(token.id);
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.emailVerified = !!dbUser.emailVerified;
+        }
+      }
+      
       return token;
+    },
+    async session({ session, token }) {
+      // Pass token data to session
+      if (token && session.user) {
+        (session.user as any).id = token.id as string;
+        (session.user as any).role = token.role as string;
+        (session.user as any).emailVerified = token.emailVerified as boolean;
+      }
+      return session;
     },
     async signIn({ user, account }) {
       if (account && user.email) {
