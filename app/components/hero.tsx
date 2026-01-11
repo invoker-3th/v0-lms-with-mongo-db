@@ -1,8 +1,30 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Hero() {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const user = session?.user as any;
+
+  const handlePostJob = () => {
+    if (!session?.user) {
+      // Not logged in - redirect to signup with director role
+      router.push("/signup?role=DIRECTOR");
+      return;
+    }
+
+    if (user?.role === "DIRECTOR") {
+      // Director - go to dashboard to post job
+      router.push("/director/dashboard");
+    } else {
+      // Not a director - redirect to signup as director
+      router.push("/signup?role=DIRECTOR");
+    }
+  };
   const heroImage =
     "https://images.pexels.com/photos/713149/pexels-photo-713149.jpeg";
   // Image source: Pexels (free)
@@ -74,11 +96,17 @@ export default function Hero() {
           transition={{ delay: 0.9 }}
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
-          <button className="px-8 py-4 bg-[var(--accent-gold)] text-black font-semibold tracking-wide hover:opacity-90 transition">
+          <Link
+            href="/talents"
+            className="px-8 py-4 bg-[var(--accent-gold)] text-black font-semibold tracking-wide hover:opacity-90 transition inline-block text-center"
+          >
             Explore Talent
-          </button>
+          </Link>
 
-          <button className="px-8 py-4 border border-white/30 text-white hover:bg-white/10 transition">
+          <button
+            onClick={handlePostJob}
+            className="px-8 py-4 border border-white/30 text-white hover:bg-white/10 transition"
+          >
             Post a Job
           </button>
         </motion.div>
