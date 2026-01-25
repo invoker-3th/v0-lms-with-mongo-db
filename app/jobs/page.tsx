@@ -154,7 +154,7 @@ export default function JobsListingPage() {
       {/* Fixed Cinematic Header */}
       <div className="fixed top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/80 to-transparent z-20 pointer-events-none" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pb-12">
         {/* Page Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

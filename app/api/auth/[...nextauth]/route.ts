@@ -56,6 +56,7 @@ export const authOptions: NextAuthConfig = {
           image: user.image,
           role: user.role,
           emailVerified: !!user.emailVerified,
+          profileCompletion: user.profileCompletion || 0,
         };
       },
     }),
@@ -76,6 +77,18 @@ export const authOptions: NextAuthConfig = {
         token.id = user.id;
         token.role = (user as any).role || (user as any).role;
         token.emailVerified = (user as any).emailVerified || false;
+        token.name = (user as any).name;
+        token.profileCompletion = (user as any).profileCompletion || 0;
+      } else if (token.id) {
+        // Refresh user data from database on each request
+        await connectDB();
+        const dbUser = await User.findById(token.id);
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.emailVerified = !!dbUser.emailVerified;
+          token.name = dbUser.name;
+          token.profileCompletion = dbUser.profileCompletion || 0;
+        }
       }
       
       return token;
@@ -86,6 +99,8 @@ export const authOptions: NextAuthConfig = {
         (session.user as any).id = token.id as string;
         (session.user as any).role = token.role as string;
         (session.user as any).emailVerified = token.emailVerified as boolean;
+        (session.user as any).name = token.name as string;
+        (session.user as any).profileCompletion = token.profileCompletion as number;
       }
       return session;
     },

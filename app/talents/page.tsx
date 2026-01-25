@@ -1,14 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Header from "@/app/components/header";
 import TalentsPreview from "@/app/components/talents-preview";
 
 export default function TalentsPage() {
   return (
     <>
-      <Header />
-      <div className="min-h-screen bg-[var(--bg-main)] pt-24 pb-16">
+      <div className="min-h-screen bg-[var(--bg-main)] pb-16">
         <div className="max-w-7xl mx-auto px-6">
           {/* Header */}
           <motion.div

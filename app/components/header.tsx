@@ -4,12 +4,52 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
 import NotificationBell from "./notifications/notification-bell";
 
 export default function Header() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const user = session?.user as any;
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showMenu]);
+
+  // Check if user profile is complete
+  const isProfileComplete = () => {
+    if (!user) return false;
+    if (user.role === "ADMIN") return true;
+    
+    // For talents, check if name exists and profile completion >= 70%
+    if (user.role === "TALENT") {
+      return user.name && user.profileCompletion >= 70;
+    }
+    
+    // For directors, check if name exists
+    if (user.role === "DIRECTOR") {
+      return !!user.name;
+    }
+    
+    return false;
+  };
+
+  const shouldShowName = isProfileComplete();
 
   return (
     <motion.header
@@ -50,65 +90,91 @@ export default function Header() {
           ) : session?.user ? (
             <>
               <NotificationBell />
-              {/* User Menu */}
-              <div className="flex items-center gap-2 sm:gap-3">
+              {/* User Menu with Dropdown */}
+              <div className="relative flex items-center gap-2 sm:gap-3" ref={menuRef}>
                 {user?.role === "ADMIN" ? (
                   <span className="text-xs sm:text-sm text-white font-medium">Welcome Admin</span>
                 ) : (
                   <>
-                    {user?.image ? (
-                      <img
-                        src={user.image}
-                        alt={user.name || "User"}
-                        className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-white/20"
-                      />
-                    ) : (
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[var(--accent-gold)]/20 border border-[var(--accent-gold)]/30 flex items-center justify-center flex-shrink-0">
-                        <span className="text-[var(--accent-gold)] text-xs font-medium">
-                          {(user?.name || user?.email || "U")[0].toUpperCase()}
+                    <button
+                      onClick={() => setShowMenu(!showMenu)}
+                      className="flex items-center gap-2 sm:gap-3 focus:outline-none"
+                    >
+                      {user?.image ? (
+                        <img
+                          src={user.image}
+                          alt={user.name || "User"}
+                          className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-white/20 cursor-pointer hover:border-[var(--accent-gold)]/50 transition"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[var(--accent-gold)]/20 border border-[var(--accent-gold)]/30 flex items-center justify-center flex-shrink-0 cursor-pointer hover:border-[var(--accent-gold)]/50 transition">
+                          <span className="text-[var(--accent-gold)] text-xs font-medium">
+                            {(user?.name || user?.email || "U")[0].toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      {shouldShowName && (
+                        <span className="text-xs sm:text-sm text-white font-medium hidden sm:block max-w-[100px] truncate">
+                          {user?.name || user?.email?.split("@")[0] || "User"}
                         </span>
-                      </div>
+                      )}
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    {showMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute top-full right-0 mt-2 w-48 bg-[var(--bg-main)] border border-white/10 rounded-lg shadow-lg z-50 overflow-hidden"
+                      >
+                        <div className="py-1">
+                          {user?.role === "DIRECTOR" ? (
+                            <Link
+                              href="/director/dashboard"
+                              onClick={() => setShowMenu(false)}
+                              className="block px-4 py-2 text-sm text-white hover:bg-white/10 transition"
+                            >
+                              Dashboard
+                            </Link>
+                          ) : user?.role === "TALENT" ? (
+                            <Link
+                              href="/talent/dashboard"
+                              onClick={() => setShowMenu(false)}
+                              className="block px-4 py-2 text-sm text-white hover:bg-white/10 transition"
+                            >
+                              Dashboard
+                            </Link>
+                          ) : null}
+                          
+                          <Link
+                            href={user?.role === "TALENT" ? "/talent/profile" : user?.role === "DIRECTOR" ? "/director/dashboard" : "/admin/jobs"}
+                            onClick={() => setShowMenu(false)}
+                            className="block px-4 py-2 text-sm text-white hover:bg-white/10 transition"
+                          >
+                            Profile
+                          </Link>
+                          
+                          <div className="border-t border-white/10 my-1" />
+                          
+                          <button
+                            onClick={() => {
+                              setShowMenu(false);
+                              signOut({ redirect: false }).then(() => {
+                                router.push("/");
+                                router.refresh();
+                              });
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-white/10 hover:text-white transition"
+                          >
+                            Sign Out
+                          </button>
+                        </div>
+                      </motion.div>
                     )}
-                    <span className="text-xs sm:text-sm text-white font-medium hidden sm:block max-w-[100px] truncate">
-                      {user?.name || user?.email?.split("@")[0] || "User"}
-                    </span>
                   </>
                 )}
-                <button
-                  onClick={() => {
-                    signOut({ redirect: false }).then(() => {
-                      router.push("/");
-                      router.refresh();
-                    });
-                  }}
-                  className="text-xs sm:text-sm text-[var(--text-secondary)] hover:text-white transition"
-                >
-                  Sign Out
-                </button>
               </div>
-              {/* Dashboard Link based on role */}
-              {user?.role === "ADMIN" ? (
-                <Link
-                  href="/admin/jobs"
-                  className="text-xs sm:text-sm text-[var(--text-secondary)] hover:text-white transition hidden lg:block"
-                >
-                  Admin Dashboard
-                </Link>
-              ) : user?.role === "DIRECTOR" ? (
-                <Link
-                  href="/director/dashboard"
-                  className="text-xs sm:text-sm text-[var(--text-secondary)] hover:text-white transition hidden lg:block"
-                >
-                  Dashboard
-                </Link>
-              ) : (
-                <Link
-                  href="/talent/dashboard"
-                  className="text-xs sm:text-sm text-[var(--text-secondary)] hover:text-white transition hidden lg:block"
-                >
-                  Dashboard
-                </Link>
-              )}
             </>
           ) : (
             <>

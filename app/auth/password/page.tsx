@@ -1,18 +1,32 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import SessionLoader from "@/app/components/auth/session-loader";
 
-export default function PasswordLoginPage() {
+function PasswordLoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [establishingSession, setEstablishingSession] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+
+  // Check for verified email from query params
+  useEffect(() => {
+    const verifiedEmail = searchParams.get("email");
+    const verified = searchParams.get("verified");
+    if (verifiedEmail && verified === "true") {
+      setEmail(verifiedEmail);
+      setMessage("Email verified! Please sign in with your password.");
+    }
+  }, [searchParams]);
 
   const waitForSession = async (maxAttempts = 20, delay = 300): Promise<any> => {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -77,9 +91,12 @@ export default function PasswordLoginPage() {
           
           if (session?.user) {
             const userRole = session.user.role;
+            const redirectUrl = searchParams.get("redirect");
             
-            // Redirect based on role
-            if (userRole === "ADMIN") {
+            // Use redirect URL if provided, otherwise redirect based on role
+            if (redirectUrl) {
+              window.location.href = redirectUrl;
+            } else if (userRole === "ADMIN") {
               window.location.href = "/admin/jobs";
             } else if (userRole === "DIRECTOR") {
               window.location.href = "/director/dashboard";
@@ -102,8 +119,11 @@ export default function PasswordLoginPage() {
             
             if (session?.user) {
               const userRole = session.user.role;
+              const redirectUrl = searchParams.get("redirect");
               
-              if (userRole === "ADMIN") {
+              if (redirectUrl) {
+                window.location.href = redirectUrl;
+              } else if (userRole === "ADMIN") {
                 window.location.href = "/admin/jobs";
               } else if (userRole === "DIRECTOR") {
                 window.location.href = "/director/dashboard";
@@ -158,6 +178,12 @@ export default function PasswordLoginPage() {
         {error && (
           <div className="mb-4 p-3 bg-white/5 border border-red-500/30 rounded text-sm text-red-400">
             {error}
+          </div>
+        )}
+
+        {message && (
+          <div className="mb-4 p-3 bg-white/5 border border-green-500/30 rounded text-sm text-green-400">
+            {message}
           </div>
         )}
 
@@ -264,3 +290,17 @@ export default function PasswordLoginPage() {
     </>
   );
 }
+
+function PasswordLoginPageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <PasswordLoginPage />
+    </Suspense>
+  );
+}
+
+export default PasswordLoginPageWrapper;

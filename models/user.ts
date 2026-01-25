@@ -2,12 +2,13 @@ import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
   {
-    email: { type: String, unique: true, required: true },
+    email: { type: String, unique: true, required: true, index: true },
     passwordHash: { type: String },
     role: {
       type: String,
       enum: ["TALENT", "DIRECTOR", "ADMIN"],
       required: true,
+      index: true,
     },
     emailVerified: { type: Date },
     name: { type: String },
@@ -47,7 +48,7 @@ const UserSchema = new mongoose.Schema(
 );
 
 // Performance indexes
-// Note: email index is automatically created by unique: true
+UserSchema.index({ email: 1 });
 UserSchema.index({ role: 1 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);

@@ -30,7 +30,7 @@ export default function Hero() {
   // Image source: Pexels (free)
 
   return (
-    <section className="relative min-h-[100vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-20">
+    <section className="relative min-h-[calc(100vh-4rem)] sm:min-h-[calc(100vh-5rem)] flex items-center justify-center overflow-hidden">
       
       {/* Hero Image */}
       <motion.img
@@ -66,13 +66,13 @@ export default function Hero() {
         initial={{ opacity: 0, y: 80 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.4, ease: "easeOut" }}
-        className="relative z-10 max-w-5xl px-6 text-center"
+        className="relative z-10 max-w-5xl px-6 text-center pt-8 sm:pt-12 md:pt-16"
       >
         <motion.h1
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.25, duration: 1.2 }}
-          className="font-heading text-[clamp(3.6rem,7vw,5.8rem)] text-white mb-6"
+          className="font-heading text-[clamp(3.6rem,7vw,5.8rem)] text-white mb-6 sm:mb-8"
         >
           Where Stories  
           <br />
@@ -83,7 +83,7 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 1 }}
-          className="text-lg md:text-xl max-w-2xl mx-auto mb-12"
+          className="text-lg md:text-xl max-w-2xl mx-auto mb-8 sm:mb-10 md:mb-12"
         >
           HubMovies is a global casting marketplace connecting actors,
           filmmakers, and creative professionals with producers, studios,
@@ -94,7 +94,7 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
+          className="flex flex-col sm:flex-row gap-4 justify-center mb-12 sm:mb-16 md:mb-20"
         >
           <Link
             href="/talents"
