@@ -16,7 +16,7 @@ The web application now features a professional centered layout where content is
 
 ### Structure
 
-```
+\`\`\`
 ┌─────────────────────────────────────────────────────────────┐
 │                        Full Width                            │
 │  ┌───────────────────────────────────────────────────────┐  │
@@ -32,17 +32,17 @@ The web application now features a professional centered layout where content is
 │  │                   Footer (max-w-7xl)                  │  │
 │  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
-```
+\`\`\`
 
 ## CSS Classes Used
 
 ### Main Container Class
-```css
+\`\`\`css
 .container {
   @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
   max-width: 1280px;
 }
-```
+\`\`\`
 
 **Breakdown:**
 - `mx-auto` - Centers the container horizontally
@@ -52,13 +52,13 @@ The web application now features a professional centered layout where content is
 
 ### Public Layout Wrapper
 The `(public)/layout.tsx` now wraps children with:
-```tsx
+\`\`\`tsx
 <main className="flex-1">
   <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
     {children}
   </div>
 </main>
-```
+\`\`\`
 
 ## Responsive Breakpoints
 
@@ -98,27 +98,27 @@ The `AnimatedBackground` component spans full width behind the centered content,
 To adjust the centered layout:
 
 1. **Change Max Width** (in `globals.css`):
-   ```css
+   \`\`\`css
    .container {
      max-width: 1024px; /* Narrower */
      /* or */
      max-width: 1440px; /* Wider */
    }
-   ```
+   \`\`\`
 
 2. **Adjust Padding** (in `globals.css`):
-   ```css
+   \`\`\`css
    .container {
      @apply mx-auto w-full px-3 sm:px-4 lg:px-6; /* Tighter */
    }
-   ```
+   \`\`\`
 
 3. **Apply to New Sections**:
-   ```jsx
+   \`\`\`jsx
    <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
      {/* Your content */}
    </section>
-   ```
+   \`\`\`
 
 ## Technical Notes
 

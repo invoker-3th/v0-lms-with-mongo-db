@@ -186,7 +186,7 @@ A **production-ready Learning Management System** with everything built and work
 
 ## 📂 Project Structure
 
-```
+\`\`\`
 ✅ app/
   ├── (public)         - Public pages
   ├── (auth)           - Auth pages
@@ -217,34 +217,34 @@ A **production-ready Learning Management System** with everything built and work
   ├── tsconfig.json    - TypeScript
   ├── next.config.mjs  - Next.js
   └── tailwind.config  - Tailwind
-```
+\`\`\`
 
 ---
 
 ## 🚀 Ready to Deploy
 
 ### Vercel (Recommended)
-```bash
+\`\`\`bash
 # 1-click deployment
 # Auto-scales
 # Free tier available
 # Custom domain ready
-```
+\`\`\`
 
 ### AWS
-```bash
+\`\`\`bash
 # EC2/ECS/Lambda
 # Full control
 # Production-grade
 # Enterprise features
-```
+\`\`\`
 
 ### Docker
-```bash
+\`\`\`bash
 # Self-hosted
 # Complete portability
 # Full customization
-```
+\`\`\`
 
 ### Other Platforms
 - Google Cloud Platform
@@ -415,7 +415,7 @@ By studying this code, you'll learn:
 
 ## 📦 What's Included
 
-```
+\`\`\`
 ✅ Source Code
   └── 30+ pages
   └── 50+ components
@@ -441,7 +441,7 @@ By studying this code, you'll learn:
   └── Tailwind CSS
   └── Next.js config
   └── Environment templates
-```
+\`\`\`
 
 ---
 

@@ -225,7 +225,7 @@ Focus on user needs. Clear calls-to-action. Helpful guidance at every step.
 ---
 
 ## File Structure
-```
+\`\`\`
 /public/
   ├── logo-promptcare.png       (Primary logo)
   ├── logo-icon.png             (Favicon/icon)
@@ -241,35 +241,35 @@ Focus on user needs. Clear calls-to-action. Helpful guidance at every step.
 
 /docs/
   └── BRAND_GUIDELINES.md       (This file)
-```
+\`\`\`
 
 ---
 
 ## Quick Start for Developers
 
 ### Setting Up Brand Colors
-```css
+\`\`\`css
 /* In globals.css */
 --primary-teal: #10B981;
 --primary-purple: #8B5CF6;
 --accent-gold: #F59E0B;
 --dark-navy: #1F2937;
 --light-cream: #F9FAFB;
-```
+\`\`\`
 
 ### Using Brand Colors
-```jsx
+\`\`\`jsx
 <button className="bg-primary-teal text-white">
   Enroll Now
 </button>
-```
+\`\`\`
 
 ### Responsive Typography
-```jsx
+\`\`\`jsx
 <h1 className="text-4xl md:text-6xl font-bold text-dark-navy">
   Learn with PromptCare Academy
 </h1>
-```
+\`\`\`
 
 ---
 

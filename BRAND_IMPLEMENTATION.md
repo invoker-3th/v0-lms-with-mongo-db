@@ -35,7 +35,7 @@ This document outlines the complete brand implementation for PromptCare Academy 
 | **Error Red** | #EF4444 | Errors, alerts, destructive actions |
 
 ### CSS Variables (app/globals.css)
-```css
+\`\`\`css
 :root {
   --primary: #10B981;           /* Teal */
   --secondary: #8B5CF6;         /* Purple */
@@ -44,7 +44,7 @@ This document outlines the complete brand implementation for PromptCare Academy 
   --foreground: #1F2937;        /* Dark Navy */
   --destructive: #EF4444;       /* Error Red */
 }
-```
+\`\`\`
 
 ---
 
@@ -56,14 +56,14 @@ This document outlines the complete brand implementation for PromptCare Academy 
 - **UI Labels**: Inter Medium (500 weight)
 
 ### Text Hierarchy
-```
+\`\`\`
 H1 (Hero): 48px, weight 700, line-height 1.2
 H2 (Section): 32px, weight 700, line-height 1.3
 H3 (Subsection): 24px, weight 600, line-height 1.4
 Body: 16px, weight 400, line-height 1.6
 Small: 14px, weight 400, line-height 1.5
 Labels: 13px, weight 500, uppercase
-```
+\`\`\`
 
 ---
 
@@ -99,7 +99,7 @@ The currency selector is now integrated into the public header and allows users 
 - Persist selection in local storage
 
 **Usage**:
-```jsx
+\`\`\`jsx
 import { CurrencySelector } from '@/components/ui/currency-selector'
 
 export function Header() {
@@ -109,7 +109,7 @@ export function Header() {
     </header>
   )
 }
-```
+\`\`\`
 
 ### Payment System Files
 
@@ -123,7 +123,7 @@ Enhanced with multi-currency support:
 - `convertCurrency(amount, from, to)` - Convert between currencies
 
 **Currency Formatting**:
-```javascript
+\`\`\`javascript
 import { paystackService } from '@/lib/paystack'
 
 // Format amount for display
@@ -132,7 +132,7 @@ const displayPrice = paystackService.formatAmount(25000, 'NGN')
 
 const displayPrice = paystackService.formatAmount(99.99, 'USD')
 // Returns: "$ 99.99"
-```
+\`\`\`
 
 #### Store Configuration (`lib/store.ts`)
 **usePreferencesStore** manages:
@@ -140,7 +140,7 @@ const displayPrice = paystackService.formatAmount(99.99, 'USD')
 - User preferences
 - Persistent storage
 
-```javascript
+\`\`\`javascript
 import { usePreferencesStore } from '@/lib/store'
 
 export function MyComponent() {
@@ -148,12 +148,12 @@ export function MyComponent() {
   
   return <select value={currency} onChange={e => setCurrency(e.target.value)}>
 }
-```
+\`\`\`
 
 ### Course Pricing Structure
 All courses support multi-currency pricing in the database:
 
-```typescript
+\`\`\`typescript
 interface Course {
   price: {
     NGN: number    // e.g., 25000
@@ -161,7 +161,7 @@ interface Course {
     GBP: number    // e.g., 75.99
   }
 }
-```
+\`\`\`
 
 ### Sample Course Prices
 | Course | NGN | USD | GBP |
@@ -207,10 +207,10 @@ interface Course {
 - Responsive sizing for mobile and desktop
 - Gradient text fallback
 
-```jsx
+\`\`\`jsx
 <Logo variant="full" />  // Full logo with text
 <Logo variant="icon" />  // Just the icon
-```
+\`\`\`
 
 ### 2. Public Header (`components/layout/public-header.tsx`)
 **Updates**:
@@ -252,7 +252,7 @@ interface Course {
 7. **Success Page** → Enrollment created, receipt shows currency
 
 ### Example Flow (NGN)
-```
+\`\`\`
 User selects: NGN (Nigerian Naira)
 Web Development Course: ₦ 25,000
 Cart Total: ₦ 25,000
@@ -264,10 +264,10 @@ Paystack initializes with NGN amount
 Payment confirmed: ₦ 25,000 paid
 ↓
 Enrollment created, receipt in NGN
-```
+\`\`\`
 
 ### Example Flow (USD)
-```
+\`\`\`
 User selects: USD (US Dollar)
 Web Development Course: $ 99.99
 Cart Total: $ 99.99
@@ -279,7 +279,7 @@ Paystack initializes with USD amount
 Payment confirmed: $ 99.99 paid
 ↓
 Enrollment created, receipt in USD
-```
+\`\`\`
 
 ---
 
@@ -340,7 +340,7 @@ Enrollment created, receipt in USD
 ## Usage Examples
 
 ### Format Currency in Components
-```jsx
+\`\`\`jsx
 import { paystackService } from '@/lib/paystack'
 import { usePreferencesStore } from '@/lib/store'
 
@@ -353,10 +353,10 @@ export function PriceDisplay({ amount }) {
     </p>
   )
 }
-```
+\`\`\`
 
 ### Display Course Price
-```jsx
+\`\`\`jsx
 import { Course } from '@/lib/types'
 import { usePreferencesStore } from '@/lib/store'
 
@@ -372,10 +372,10 @@ export function CourseCard({ course }: { course: Course }) {
     </div>
   )
 }
-```
+\`\`\`
 
 ### Initialize Payment
-```jsx
+\`\`\`jsx
 import { paystackService } from '@/lib/paystack'
 import { usePreferencesStore } from '@/lib/store'
 
@@ -392,7 +392,7 @@ export async function checkout() {
   
   window.location.href = payment.authorizationUrl
 }
-```
+\`\`\`
 
 ---
 
@@ -436,7 +436,7 @@ export async function checkout() {
 ---
 
 ## Brand Assets Location
-```
+\`\`\`
 /public/
 ├── logo-promptcare.png        (Primary logo)
 ├── logo-icon.png              (Favicon & icon)
@@ -463,7 +463,7 @@ export async function checkout() {
 
 /app/
 └── globals.css                (Brand colors & typography)
-```
+\`\`\`
 
 ---
 

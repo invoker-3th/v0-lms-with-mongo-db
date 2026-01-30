@@ -8,11 +8,11 @@ Welcome! Your complete Learning Management System with professional branding and
 
 ## ⚡ Quick Start (2 minutes)
 
-```bash
+\`\`\`bash
 npm install
 npm run dev
 # Open http://localhost:3000
-```
+\`\`\`
 
 **You'll see:**
 - ✨ PromptCare Academy logo and branding (Teal #10B981)
@@ -129,12 +129,12 @@ See "Brand Implementation" section on **Currency System Details** for:
   - Gold `#F59E0B` - Premium (achievements, badges)
 
 ### Updated Test Accounts
-```
+\`\`\`
 Student:     student@promptcare.com / Student@123
 Admin:       admin@promptcare.com / Admin@123
 Instructor:  instructor@promptcare.com / Instructor@123
 Finance:     finance@promptcare.com / Finance@123
-```
+\`\`\`
 
 ---
 
@@ -223,7 +223,7 @@ Finance:     finance@promptcare.com / Finance@123
 
 ## 🎯 File Structure Quick Reference
 
-```
+\`\`\`
 / (Root)
 ├── app/                    # Main application
 │   ├── globals.css        # 🎨 BRAND COLORS - Start here!
@@ -256,7 +256,7 @@ Finance:     finance@promptcare.com / Finance@123
     ├── BRAND_GUIDELINES.md            # Brand system
     ├── SYSTEM_OVERVIEW.md             # Full overview
     └── [Many more guides available]
-```
+\`\`\`
 
 ---
 
@@ -396,7 +396,7 @@ Your **PromptCare Academy** LMS is:
 
 ## 🚀 Quick Commands
 
-```bash
+\`\`\`bash
 # Install dependencies
 npm install
 
@@ -414,7 +414,7 @@ npm run type-check
 
 # Format code
 npm run format
-```
+\`\`\`
 
 ---
 

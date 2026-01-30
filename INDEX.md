@@ -8,7 +8,7 @@ You have a **fully built, production-ready LMS** with everything you need to run
 
 ## ⚡ 2-Minute Quick Start
 
-```bash
+\`\`\`bash
 # 1. Install dependencies
 npm install
 
@@ -19,7 +19,7 @@ npm run dev
 # http://localhost:3000
 
 # ✅ That's it! System is live.
-```
+\`\`\`
 
 **Login with:** student@example.com / Student@123
 
@@ -179,7 +179,7 @@ After running `npm run dev`, you can immediately:
 
 Use these accounts to test different roles:
 
-```
+\`\`\`
 STUDENT
 Email: student@example.com
 Password: Student@123
@@ -195,7 +195,7 @@ Password: Instructor@123
 FINANCE
 Email: finance@example.com
 Password: Finance@123
-```
+\`\`\`
 
 ---
 
@@ -340,17 +340,17 @@ Password: Finance@123
 - Common issues and their fixes
 
 ### Step 3: Clear Cache
-```bash
+\`\`\`bash
 rm -rf .next
 npm run dev
-```
+\`\`\`
 
 ### Step 4: Reinstall
-```bash
+\`\`\`bash
 rm -rf node_modules
 npm install
 npm run dev
-```
+\`\`\`
 
 ### Step 5: Verify
 - Use `VERIFICATION_CHECKLIST.md`
@@ -424,9 +424,9 @@ Everything is built. Everything works. Everything is documented.
 
 **Next step:** Open terminal and run:
 
-```bash
+\`\`\`bash
 npm install && npm run dev
-```
+\`\`\`
 
 Then read `START_HERE.md`
 
@@ -434,7 +434,7 @@ Then read `START_HERE.md`
 
 ## 📞 File Directory Quick Reference
 
-```
+\`\`\`
 Root Documents (Read these!)
 ├── START_HERE.md           ← Read first!
 ├── QUICKSTART.md           ← Test the system
@@ -464,7 +464,7 @@ Configuration
 ├── tsconfig.json          ← TypeScript config
 ├── next.config.mjs        ← Next.js config
 └── tailwind.config.ts     ← Tailwind config
-```
+\`\`\`
 
 ---
 

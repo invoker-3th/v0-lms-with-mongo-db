@@ -347,7 +347,7 @@ All endpoints fully functional with mock data:
 
 ## File Structure
 
-```
+\`\`\`
 PromptCare Academy/
 ├── app/
 │   ├── (auth)/              # Authentication pages
@@ -402,7 +402,7 @@ PromptCare Academy/
 
 🎨 = Brand/Design related
 💱 = Currency/Payment related
-```
+\`\`\`
 
 ---
 
@@ -460,38 +460,38 @@ PromptCare Academy/
 ## Production Deployment Steps
 
 ### 1. Database Setup
-```bash
+\`\`\`bash
 # Replace mock-db with real database
 # Option 1: MongoDB
 npm install mongoose
 # Option 2: PostgreSQL
 npm install prisma @prisma/client
-```
+\`\`\`
 
 ### 2. Payment Gateway Setup
-```bash
+\`\`\`bash
 # Set up real Paystack account
 # Add API keys to .env.local
 NEXT_PUBLIC_PAYSTACK_KEY=pk_live_xxxxx
 PAYSTACK_SECRET_KEY=sk_live_xxxxx
-```
+\`\`\`
 
 ### 3. Authentication Setup
-```bash
+\`\`\`bash
 # Option 1: Auth.js
 npm install next-auth
 # Option 2: Supabase
 npm install @supabase/supabase-js
-```
+\`\`\`
 
 ### 4. Email Setup
-```bash
+\`\`\`bash
 # Add email service (SendGrid, Mailgun, etc.)
 npm install nodemailer  # or email service SDK
-```
+\`\`\`
 
 ### 5. Deployment
-```bash
+\`\`\`bash
 # Deploy to Vercel
 npm install -g vercel
 vercel deploy
@@ -500,7 +500,7 @@ vercel deploy
 # Ensure .env.local is set up
 # Configure database connection string
 # Set up CDN for images
-```
+\`\`\`
 
 ### 6. Security Checklist
 - [ ] Remove mock credentials
