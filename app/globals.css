@@ -147,6 +147,25 @@
   }
 }
 
+/* Container - Centered layout with max width */
+@layer components {
+  .container {
+    @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
+    max-width: 1280px;
+  }
+
+  /* Full width container for background elements */
+  .container-full {
+    @apply w-full;
+  }
+
+  /* Centered content wrapper */
+  .content-wrapper {
+    @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
+    max-width: 1280px;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

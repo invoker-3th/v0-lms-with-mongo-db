@@ -9,26 +9,24 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "LearnHub - Online Learning Platform",
+  title: "PromptCare Academy - Premium Online Learning Platform",
   description:
-    "Empowering learners worldwide with high-quality online education. Learn web development, design, business, and more.",
+    "Transform your career with PromptCare Academy. Learn web development, UI/UX design, digital marketing, data analytics and more from industry experts. Join 10,000+ students today.",
   generator: "v0.app",
   icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-    apple: "/apple-icon.png",
+    icon: "/logo-icon.png",
+    apple: "/logo-icon.png",
+  },
+  openGraph: {
+    title: "PromptCare Academy - Premium Online Learning",
+    description: "Transform your career with expert-led courses and certification programs",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PromptCare Academy",
+    description: "Premium online learning platform for professional development",
   },
 }
 
