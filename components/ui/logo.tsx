@@ -1,17 +1,40 @@
-import { BookOpen } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 interface LogoProps {
   className?: string
+  variant?: "full" | "icon"
 }
 
-export function Logo({ className }: LogoProps) {
+export function Logo({ className, variant = "full" }: LogoProps) {
+  if (variant === "icon") {
+    return (
+      <Link href="/" className={`flex items-center ${className}`}>
+        <Image
+          src="/logo-icon.png"
+          alt="PromptCare Academy"
+          width={40}
+          height={40}
+          priority
+          className="h-10 w-10"
+        />
+      </Link>
+    )
+  }
+
   return (
-    <Link href="/" className={`flex items-center gap-2 font-bold text-xl ${className}`}>
-      <div className="bg-primary text-primary-foreground p-2 rounded-lg">
-        <BookOpen className="w-5 h-5" />
-      </div>
-      <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">LearnHub</span>
+    <Link href="/" className={`flex items-center gap-3 font-bold text-xl ${className}`}>
+      <Image
+        src="/logo-promptcare.png"
+        alt="PromptCare Academy"
+        width={120}
+        height={40}
+        priority
+        className="h-10 w-auto"
+      />
+      <span className="hidden sm:inline bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-bold text-lg">
+        PromptCare Academy
+      </span>
     </Link>
   )
 }

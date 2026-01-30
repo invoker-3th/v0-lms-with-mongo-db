@@ -1,7 +1,7 @@
 // Global state management with Zustand
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import type { User, CartItem } from "./types"
+import type { User, CartItem, Currency } from "./types"
 
 interface AuthState {
   user: User | null
