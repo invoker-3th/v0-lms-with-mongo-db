@@ -99,7 +99,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="student@academy.com"
+                placeholder="your@email.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
@@ -141,52 +141,6 @@ export default function LoginPage() {
               {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
-
-          <div className="mt-6 space-y-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Demo accounts</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setFormData({ ...formData, email: "student@academy.com", password: "password123" })}
-              >
-                Student Demo
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setFormData({ ...formData, email: "admin@academy.com", password: "admin123" })}
-              >
-                Admin Demo
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setFormData({ ...formData, email: "instructor@academy.com", password: "instructor123" })}
-              >
-                Instructor Demo
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setFormData({ ...formData, email: "finance@academy.com", password: "finance123" })}
-              >
-                Finance Demo
-              </Button>
-            </div>
-          </div>
 
           <div className="mt-6 text-center text-sm">
             Don't have an account?{" "}

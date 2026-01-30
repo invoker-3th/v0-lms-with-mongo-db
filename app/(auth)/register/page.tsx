@@ -67,7 +67,7 @@ export default function RegisterPage() {
 
       toast({
         title: "Account created!",
-        description: "Welcome to LearnHub. Let's start learning!",
+        description: "Welcome to PromptCare Academy. Let's start learning!",
       })
 
       // Redirect to dashboard
@@ -87,7 +87,7 @@ export default function RegisterPage() {
       <Card>
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-          <CardDescription>Enter your information to get started with LearnHub</CardDescription>
+          <CardDescription>Enter your information to get started with PromptCare Academy</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
