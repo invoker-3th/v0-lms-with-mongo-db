@@ -8,7 +8,7 @@ You have a **fully functional, production-ready LMS** with all pages built and a
 
 ## ⚡ Quick Start (2 minutes)
 
-```bash
+\`\`\`bash
 # 1. Install
 npm install
 
@@ -17,7 +17,7 @@ npm run dev
 
 # 3. Open browser
 http://localhost:3000
-```
+\`\`\`
 
 **That's it!** The entire system is live.
 
@@ -165,7 +165,7 @@ Want to add something? Here's how easy it is:
 ### Add a FAQ Page (Already Done)
 File: `/app/(public)/faq/page.tsx` - **Only 80 lines!**
 
-```typescript
+\`\`\`typescript
 // 1. Create data structure
 const faqs = [
   { question: "...", answer: "..." },
@@ -188,7 +188,7 @@ export default function FAQPage() {
 
 // 3. Add to navigation (in header)
 // 4. Done! Page works immediately
-```
+\`\`\`
 
 All complex features follow this same pattern.
 
@@ -301,7 +301,7 @@ This system is production-ready:
 ## 🚀 Deploy in 5 Minutes
 
 ### Using Vercel (Easiest)
-```bash
+\`\`\`bash
 # 1. Push to GitHub
 git add .
 git commit -m "Initial commit"
@@ -313,13 +313,13 @@ git push
 # 5. Share link
 
 # Done! System is live!
-```
+\`\`\`
 
 ### Using Docker
-```bash
+\`\`\`bash
 docker build -t lms .
 docker run -p 3000:3000 lms
-```
+\`\`\`
 
 ### Using AWS
 1. Push to GitHub
@@ -366,7 +366,7 @@ Your complete, production-ready Learning Management System is installed and read
 
 ## 📖 Next: Read This
 
-```
+\`\`\`
 1. Run: npm run dev
 2. Open: http://localhost:3000
 3. Read: QUICKSTART.md
@@ -377,7 +377,7 @@ Your complete, production-ready Learning Management System is installed and read
 8. Deploy: Push to Vercel
 9. Customize: Make it yours
 10. Share: Show the world!
-```
+\`\`\`
 
 ---
 

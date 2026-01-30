@@ -592,4 +592,4 @@ For API questions or issues:
 - Documentation: https://docs.lmsacademy.com
 \`\`\`
 
-```env file="" isHidden
+\`\`\`env file="" isHidden

@@ -201,7 +201,7 @@ This project includes comprehensive documentation to help you understand, use, a
 ## 📂 How Documentation is Organized
 
 ### Root Level Files
-```
+\`\`\`
 /START_HERE.md              ← Read first!
 /QUICKSTART.md              ← Test the system
 /SYSTEM_OVERVIEW.md         ← Features overview
@@ -209,14 +209,14 @@ This project includes comprehensive documentation to help you understand, use, a
 /INSTALLATION_GUIDE.md      ← Setup & troubleshooting
 /VERIFICATION_CHECKLIST.md  ← Test everything
 /README.md                  ← Project overview
-```
+\`\`\`
 
 ### Documentation Folder
-```
+\`\`\`
 /docs/
   ├── API.md               ← API endpoints
   └── DEPLOYMENT.md        ← Production deployment
-```
+\`\`\`
 
 ---
 
@@ -290,7 +290,7 @@ This project includes comprehensive documentation to help you understand, use, a
 ## 🎓 Learning Path
 
 ### Beginner (New to LMS/web dev)
-```
+\`\`\`
 START_HERE.md (5 min)
   ↓
 QUICKSTART.md (10 min)
@@ -302,10 +302,10 @@ SYSTEM_OVERVIEW.md (15 min)
 Explore code files (60 min)
   ↓
 You now understand the system!
-```
+\`\`\`
 
 ### Intermediate (Some web dev experience)
-```
+\`\`\`
 START_HERE.md (5 min)
   ↓
 IMPLEMENTATION_STATUS.md (15 min)
@@ -317,10 +317,10 @@ docs/API.md (15 min)
 Study code files (90 min)
   ↓
 You can now extend it!
-```
+\`\`\`
 
 ### Advanced (Full-stack developer)
-```
+\`\`\`
 IMPLEMENTATION_STATUS.md (15 min)
   ↓
 docs/API.md (15 min)
@@ -330,7 +330,7 @@ Review code architecture (30 min)
 Implement improvements (2-8 hours)
   ↓
 You're now improving it!
-```
+\`\`\`
 
 ---
 

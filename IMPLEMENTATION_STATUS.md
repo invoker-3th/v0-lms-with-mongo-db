@@ -198,7 +198,7 @@ A fully functional, production-ready Learning Management System built with Next.
 ## 🚀 How to Get Started
 
 ### Setup
-```bash
+\`\`\`bash
 # Install dependencies
 npm install
 
@@ -206,10 +206,10 @@ npm install
 npm run dev
 
 # Open http://localhost:3000
-```
+\`\`\`
 
 ### Test Accounts
-```
+\`\`\`
 Student:
 - Email: student@example.com
 - Password: Student@123
@@ -221,7 +221,7 @@ Admin:
 Instructor:
 - Email: instructor@example.com
 - Password: Instructor@123
-```
+\`\`\`
 
 ### Navigation Flow
 1. **Public Users**: Visit `/` → Browse courses at `/courses` → Click course → Add to cart → Checkout
@@ -232,7 +232,7 @@ Instructor:
 
 ## 📁 Project Structure
 
-```
+\`\`\`
 ├── app/
 │   ├── (public)/              # Public pages (home, courses, about, contact)
 │   ├── (auth)/                # Auth pages (login, register, forgot password)
@@ -262,14 +262,14 @@ Instructor:
 │   └── DEPLOYMENT.md          # Deployment guide
 │
 └── public/                    # Static assets
-```
+\`\`\`
 
 ---
 
 ## 🔧 Environment Setup
 
 Create `.env.local`:
-```env
+\`\`\`env
 # Database (mock by default, replace with real MongoDB/PostgreSQL)
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
@@ -283,7 +283,7 @@ SENDGRID_API_KEY=your_sendgrid_key
 # Optional: Video hosting
 YOUTUBE_API_KEY=your_youtube_key
 AWS_S3_BUCKET=your_bucket_name
-```
+\`\`\`
 
 ---
 

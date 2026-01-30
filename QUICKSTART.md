@@ -4,7 +4,7 @@ Get the complete Learning Management System up and running in 2 minutes.
 
 ## ⚡ Installation
 
-```bash
+\`\`\`bash
 # 1. Install dependencies
 npm install
 
@@ -13,7 +13,7 @@ npm run dev
 
 # 3. Open browser
 # Visit http://localhost:3000
-```
+\`\`\`
 
 **That's it!** The system is fully functional with mock data.
 
@@ -24,31 +24,31 @@ npm run dev
 Use these accounts to test different roles:
 
 ### Student Account
-```
+\`\`\`
 Email: student@example.com
 Password: Student@123
-```
+\`\`\`
 **Test**: Browse courses → Add to cart → Checkout → Access dashboard
 
 ### Admin Account
-```
+\`\`\`
 Email: admin@example.com
 Password: Admin@123
-```
+\`\`\`
 **Test**: Manage courses → View students → Check payments → Configure settings
 
 ### Instructor Account
-```
+\`\`\`
 Email: instructor@example.com
 Password: Instructor@123
-```
+\`\`\`
 **Test**: Create courses → View enrollment stats → Download reports
 
 ### Finance Team
-```
+\`\`\`
 Email: finance@example.com
 Password: Finance@123
-```
+\`\`\`
 **Test**: Monitor payments → Generate invoices → View financial reports
 
 ---
@@ -130,7 +130,7 @@ Password: Finance@123
 ## 🧪 Test Different Scenarios
 
 ### Scenario 1: Complete Purchase as New User
-```
+\`\`\`
 1. Homepage (/) → Register
 2. Courses page (/courses) → Click a course
 3. Course detail page → Add to cart
@@ -138,10 +138,10 @@ Password: Finance@123
 5. Checkout (/checkout) → Enter details → Pay
 6. Success page (/checkout/success) → See order
 7. Dashboard (/dashboard) → See enrolled course
-```
+\`\`\`
 
 ### Scenario 2: Admin Creates Course
-```
+\`\`\`
 1. Login with admin email
 2. Auto-redirect to /admin
 3. Click "Courses" → "Create New Course"
@@ -149,10 +149,10 @@ Password: Finance@123
 5. Add modules and lessons
 6. Publish course
 7. Course appears in /courses for students
-```
+\`\`\`
 
 ### Scenario 3: Student Completes Course
-```
+\`\`\`
 1. Login as student
 2. Go to /dashboard/courses
 3. Click "Learn" on course
@@ -160,7 +160,7 @@ Password: Finance@123
 5. See progress bar update
 6. On 100% completion → Certificate ready
 7. Go to /dashboard/certificates → Download
-```
+\`\`\`
 
 ---
 

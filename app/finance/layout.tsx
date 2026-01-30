@@ -1,27 +1,26 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuthStore } from "@/lib/store"
-import { BookOpen, Users, BarChart3, Settings, CreditCard, LogOut } from "lucide-react"
+import { DollarSign, Home, BarChart3, Settings, LogOut, CreditCard } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function FinanceLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const { user, clearAuth } = useAuthStore()
 
   useEffect(() => {
     if (!user) {
       router.push("/login")
-    } else if (user.role !== "admin") {
+    } else if (user.role !== "finance") {
       router.push("/dashboard")
     }
   }, [user, router])
 
-  if (!user || user.role !== "admin") {
+  if (!user || user.role !== "finance") {
     return null
   }
 
@@ -31,11 +30,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const navigation = [
-    { name: "Dashboard", href: "/admin", icon: BarChart3 },
-    { name: "Courses", href: "/admin/courses", icon: BookOpen },
-    { name: "Students", href: "/admin/students", icon: Users },
-    { name: "Payments", href: "/admin/payments", icon: CreditCard },
-    { name: "Settings", href: "/admin/settings", icon: Settings },
+    { name: "Dashboard", href: "/finance", icon: Home },
+    { name: "Transactions", href: "/finance/transactions", icon: CreditCard },
+    { name: "Reports", href: "/finance/reports", icon: BarChart3 },
+    { name: "Settings", href: "/finance/settings", icon: Settings },
   ]
 
   return (
@@ -45,8 +43,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center border-b px-6">
-            <BookOpen className="h-6 w-6 text-primary" />
-            <span className="ml-2 text-lg font-bold">LMS Admin</span>
+            <DollarSign className="h-6 w-6 text-primary" />
+            <span className="ml-2 text-lg font-bold">PromptCare</span>
           </div>
 
           {/* Navigation */}
@@ -74,7 +72,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{user.name}</p>
-                <p className="text-xs text-muted-foreground">Administrator</p>
+                <p className="text-xs text-muted-foreground">Finance</p>
               </div>
             </div>
             <Button variant="outline" size="sm" className="w-full bg-transparent" onClick={handleLogout}>
@@ -86,7 +84,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto">
+        <div className="bg-background">{children}</div>
+      </main>
     </div>
   )
 }

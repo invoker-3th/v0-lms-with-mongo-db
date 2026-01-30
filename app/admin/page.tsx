@@ -1,11 +1,12 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { mockDB } from "@/lib/mock-db" // Import mockDB here
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, BookOpen, DollarSign, TrendingUp, Award, Activity } from "lucide-react"
-import { mockDB } from "@/lib/mock-db"
+import { db } from "@/lib/mock-db"
 import { formatCurrency } from "@/lib/utils/format"
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
@@ -24,10 +25,10 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     // Calculate stats
-    const students = mockDB.users.filter((u) => u.role === "student")
-    const courses = mockDB.courses.filter((c) => c.status === "published")
-    const enrollments = mockDB.enrollments
-    const payments = mockDB.payments.filter((p) => p.status === "success")
+    const students = db.users.filter((u) => u.role === "student")
+    const courses = db.courses.filter((c) => c.status === "published")
+    const enrollments = db.enrollments
+    const payments = db.payments.filter((p) => p.status === "success")
 
     const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0)
 

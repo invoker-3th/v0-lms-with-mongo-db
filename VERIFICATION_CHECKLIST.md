@@ -17,9 +17,9 @@ Use this checklist to verify your system is working correctly.
 
 ## ▶️ Server Startup
 
-```bash
+\`\`\`bash
 npm run dev
-```
+\`\`\`
 
 Verify:
 - [ ] Terminal shows: "▲ Next.js 16.x.x"

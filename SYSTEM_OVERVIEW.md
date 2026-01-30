@@ -393,12 +393,12 @@ Including but not limited to:
 - All with realistic pricing, descriptions, instructors
 
 ### 10+ Test User Accounts
-```
+\`\`\`
 Student: student@example.com / Student@123
 Admin: admin@example.com / Admin@123
 Instructor: instructor@example.com / Instructor@123
 Finance: finance@example.com / Finance@123
-```
+\`\`\`
 
 ### Mock Transactions & Enrollments
 - Sample payments

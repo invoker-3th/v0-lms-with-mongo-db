@@ -9,10 +9,10 @@ A premium, fully-functional Learning Management System with stunning brand ident
 ## Getting Started (2 Minutes)
 
 ### 1. Start the Development Server
-```bash
+\`\`\`bash
 npm install
 npm run dev
-```
+\`\`\`
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
@@ -28,31 +28,31 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Test Accounts
 
 ### For Students
-```
+\`\`\`
 Email: student@promptcare.com
 Password: Student@123
-```
+\`\`\`
 ✅ Can browse courses, add to cart, and checkout
 
 ### For Administrators
-```
+\`\`\`
 Email: admin@promptcare.com
 Password: Admin@123
-```
+\`\`\`
 ✅ Can manage courses, students, payments, and view analytics
 
 ### For Instructors
-```
+\`\`\`
 Email: instructor@promptcare.com
 Password: Instructor@123
-```
+\`\`\`
 ✅ Can create and manage courses
 
 ### For Finance Team
-```
+\`\`\`
 Email: finance@promptcare.com
 Password: Finance@123
-```
+\`\`\`
 ✅ Can view revenue, payments, and financial reports
 
 ---
@@ -185,7 +185,7 @@ Password: Finance@123
 
 ## File Structure Quick Reference
 
-```
+\`\`\`
 PromptCare Academy/
 │
 ├── app/
@@ -230,7 +230,7 @@ PromptCare Academy/
     ├── BRAND_GUIDELINES.md       # Full brand guidelines
     ├── BRAND_IMPLEMENTATION.md   # Implementation details
     └── API.md                    # API documentation
-```
+\`\`\`
 
 ---
 

@@ -12,17 +12,17 @@
 ## Installation Steps
 
 ### Step 1: Clone or Extract Project
-```bash
+\`\`\`bash
 # If you have a git repository
 git clone <repository-url>
 cd lms-app
 
 # Or if you extracted from zip
 cd lms-app
-```
+\`\`\`
 
 ### Step 2: Install Dependencies
-```bash
+\`\`\`bash
 npm install
 
 # Or using yarn
@@ -30,12 +30,12 @@ yarn install
 
 # Or using pnpm
 pnpm install
-```
+\`\`\`
 
 **This will take 2-5 minutes depending on your internet speed.**
 
 ### Step 3: Start Development Server
-```bash
+\`\`\`bash
 npm run dev
 
 # Or with yarn
@@ -43,12 +43,12 @@ yarn dev
 
 # Or with pnpm
 pnpm dev
-```
+\`\`\`
 
 ### Step 4: Open in Browser
-```
+\`\`\`
 Open: http://localhost:3000
-```
+\`\`\`
 
 ✅ **You should see the LearnHub homepage!**
 
@@ -62,7 +62,7 @@ Open: http://localhost:3000
 **Symptoms**: Browser shows blank white page
 
 **Solution**:
-```bash
+\`\`\`bash
 # 1. Clear Next.js cache
 rm -rf .next
 
@@ -75,13 +75,13 @@ npm install --force
 npm run dev
 
 # 5. Hard refresh browser (Ctrl+F5)
-```
+\`\`\`
 
 #### Issue 2: Styling Not Applied
 **Symptoms**: Page loads but looks unstyled (no colors, wrong fonts)
 
 **Solution**:
-```bash
+\`\`\`bash
 # Check if globals.css is properly imported
 # It should be in app/layout.tsx
 
@@ -90,13 +90,13 @@ npm run dev
 2. Run: npm run build
 3. Run: npm run dev
 4. Hard refresh (Ctrl+Shift+F5)
-```
+\`\`\`
 
 #### Issue 3: "Cannot find module" Errors
 **Symptoms**: Console shows import errors
 
 **Solution**:
-```bash
+\`\`\`bash
 # Clear npm cache
 npm cache clean --force
 
@@ -107,13 +107,13 @@ npm install
 
 # Restart server
 npm run dev
-```
+\`\`\`
 
 #### Issue 4: Port 3000 Already in Use
 **Symptoms**: Error: "Port 3000 is already in use"
 
 **Solution**:
-```bash
+\`\`\`bash
 # Kill process on port 3000
 # On macOS/Linux:
 lsof -ti:3000 | xargs kill -9
@@ -124,7 +124,7 @@ taskkill /PID <PID> /F
 
 # Or run on different port
 npm run dev -- -p 3001
-```
+\`\`\`
 
 #### Issue 5: Components Not Rendering
 **Symptoms**: Page structure is there but no buttons/cards visible
@@ -146,13 +146,13 @@ npm run dev -- -p 3001
 
 After running `npm run dev`, you should see:
 
-```
+\`\`\`
 ▲ Next.js 16.x.x
 - Local:        http://localhost:3000
 - Environments: .env.local
 
 ✓ Ready in XXms
-```
+\`\`\`
 
 ### Quick Visual Checks
 
@@ -185,19 +185,19 @@ After running `npm run dev`, you should see:
 
 ### Create `.env.local`
 
-```bash
+\`\`\`bash
 # In project root, create .env.local
 echo 'NEXT_PUBLIC_APP_URL=http://localhost:3000' > .env.local
-```
+\`\`\`
 
 Or manually create the file with this content:
 
-```env
+\`\`\`env
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
+\`\`\`
 
 ### Optional Variables (for future production)
-```env
+\`\`\`env
 # Database (when connecting real DB)
 DATABASE_URL=mongodb://username:password@localhost:27017/lms
 
@@ -212,13 +212,13 @@ SENDGRID_API_KEY=SG.xxxxx
 YOUTUBE_API_KEY=AIzaSyDxxxxxxxx
 AWS_S3_BUCKET=your-bucket-name
 AWS_S3_REGION=us-east-1
-```
+\`\`\`
 
 ---
 
 ## Project Structure (What Was Built)
 
-```
+\`\`\`
 lms-app/
 ├── app/
 │   ├── (public)/          # Public pages
@@ -292,13 +292,13 @@ lms-app/
     ├── images/            # Course thumbnails
     ├── avatars/           # User avatars
     └── icons/             # App icons
-```
+\`\`\`
 
 ---
 
 ## Running Commands Reference
 
-```bash
+\`\`\`bash
 # Start development server
 npm run dev
 
@@ -316,7 +316,7 @@ npm run format
 
 # Type check
 npm run type-check
-```
+\`\`\`
 
 ---
 
@@ -342,7 +342,7 @@ After installation, verify everything works:
 
 ## Troubleshooting Commands
 
-```bash
+\`\`\`bash
 # If something breaks, try these in order:
 
 # 1. Clear Next.js cache
@@ -366,7 +366,7 @@ node --version  # Should be 18.17+
 
 # 7. Check npm version
 npm --version   # Should be 9.0+
-```
+\`\`\`
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## System Architecture Overview
 
-```
+\`\`\`
 ┌─────────────────────────────────────────────────────────────────┐
 │                     LearnHub LMS System                         │
 └─────────────────────────────────────────────────────────────────┘
@@ -40,7 +40,7 @@
                               │ • Payments       │
                               │ • Settings       │
                               └──────────────────┘
-```
+\`\`\`
 
 ---
 
@@ -48,7 +48,7 @@
 
 ### Student Path
 
-```
+\`\`\`
 ┌─────────────┐
 │   Home      │
 │   Page      │
@@ -115,11 +115,11 @@
   │ Lessons &      │
   │ Get Certificate│
   └────────────────┘
-```
+\`\`\`
 
 ### Admin Path
 
-```
+\`\`\`
 ┌──────────────┐
 │  Login as    │
 │  Admin       │
@@ -149,13 +149,13 @@
                          ┌──────────┐
                          │ Settings │
                          └──────────┘
-```
+\`\`\`
 
 ---
 
 ## Data Flow Architecture
 
-```
+\`\`\`
 ┌────────────────────────────────────────────────────────────┐
 │                    Frontend (React)                        │
 │  Pages → Components → State (Zustand) → UI                │
@@ -185,13 +185,13 @@
 │  • Certificates                                            │
 │  • Progress Records                                        │
 └────────────────────────────────────────────────────────────┘
-```
+\`\`\`
 
 ---
 
 ## State Management Flow
 
-```
+\`\`\`
 ┌─────────────────────────────────────────┐
 │     Global State (Zustand Stores)       │
 ├─────────────────────────────────────────┤
@@ -218,13 +218,13 @@
          ▲              ▲              ▲
          │              │              │
     Pages & Components access state
-```
+\`\`\`
 
 ---
 
 ## Component Hierarchy
 
-```
+\`\`\`
 RootLayout
 ├── Metadata
 ├── Fonts (Geist)
@@ -256,13 +256,13 @@ RootLayout
     │
     └── Cart/Checkout Layout
         └── Content
-```
+\`\`\`
 
 ---
 
 ## API Endpoint Map
 
-```
+\`\`\`
 Authentication
 ├── POST /api/auth/login
 ├── POST /api/auth/register
@@ -290,13 +290,13 @@ Admin
 ├── GET /api/admin/stats
 ├── GET /api/admin/students
 └── GET /api/admin/analytics
-```
+\`\`\`
 
 ---
 
 ## Database Schema
 
-```
+\`\`\`
 USERS
 ├── id (string)
 ├── name (string)
@@ -353,13 +353,13 @@ CERTIFICATES
 ├── issuedAt (date)
 ├── certificateUrl (url)
 └── verificationCode (string)
-```
+\`\`\`
 
 ---
 
 ## Page Layout Map
 
-```
+\`\`\`
 PUBLIC PAGES
 ├── Home /
 │   ├── Hero Section
@@ -450,13 +450,13 @@ ADMIN PAGES
     ├── Email Settings
     ├── Payment Settings
     └── Feature Toggles
-```
+\`\`\`
 
 ---
 
 ## Feature Implementation Checklist
 
-```
+\`\`\`
 ✅ COMPLETED FEATURES
 ├── Authentication System
 │   ├── ✅ Login/Register
@@ -511,13 +511,13 @@ ADMIN PAGES
 ├── Real Payments
 ├── Email Notifications
 └── Live Classes
-```
+\`\`\`
 
 ---
 
 ## Technology Stack Visualization
 
-```
+\`\`\`
 ┌─────────────────────────────────────────┐
 │          Frontend Layer                 │
 ├─────────────────────────────────────────┤
@@ -552,13 +552,13 @@ ADMIN PAGES
 │ • Mock Database (In-Memory)             │
 │ • Ready for: MongoDB, PostgreSQL, etc. │
 └─────────────────────────────────────────┘
-```
+\`\`\`
 
 ---
 
 ## Role-Based Access Control
 
-```
+\`\`\`
 PUBLIC
 ├── View Home Page
 ├── View Course Catalog
@@ -593,13 +593,13 @@ FINANCE
 ├── View Payments
 ├── Generate Reports
 └── Export Data
-```
+\`\`\`
 
 ---
 
 ## File Size & Count Summary
 
-```
+\`\`\`
 Code Files
 ├── Pages: 30+
 ├── Components: 50+
@@ -626,13 +626,13 @@ Assets
 ├── Avatar Images: 10+
 ├── Icons: 50+ (Lucide)
 └── Total: 110+ assets
-```
+\`\`\`
 
 ---
 
 ## Deployment Architecture
 
-```
+\`\`\`
 ┌─────────────────────────────────────────┐
 │          Your Local Machine              │
 │  npm install && npm run dev             │
@@ -653,13 +653,13 @@ Assets
 │ Vercel │   │   AWS/    │
 │(Easy)  │   │ Others    │
 └────────┘   └────────────┘
-```
+\`\`\`
 
 ---
 
 ## Performance Optimization Map
 
-```
+\`\`\`
 Frontend Performance
 ├── Code Splitting (Next.js automatic)
 ├── Image Optimization (Next Image)
@@ -680,7 +680,7 @@ UX Performance
 ├── Optimistic Updates (cart)
 ├── Progressive Enhancement
 └── Fallback UI
-```
+\`\`\`
 
 ---
 

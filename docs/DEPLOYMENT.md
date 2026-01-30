@@ -477,4 +477,4 @@ Monthly checks:
 - [ ] Competitor analysis
 \`\`\`
 
-```env.example file="" isHidden
+\`\`\`env.example file="" isHidden
