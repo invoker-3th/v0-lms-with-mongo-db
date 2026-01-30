@@ -5,8 +5,8 @@ import type { User, Course, Enrollment, Payment, Certificate, Quiz, Assignment }
 export const mockUsers: User[] = [
   {
     id: "user-1",
-    email: "student@academy.com",
-    password: "password123",
+    email: "student@promptcare.com",
+    password: "Student@123",
     name: "John Student",
     role: "student",
     avatar: "/student-avatar.png",
@@ -17,8 +17,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-2",
-    email: "admin@academy.com",
-    password: "admin123",
+    email: "admin@promptcare.com",
+    password: "Admin@123",
     name: "Sarah Admin",
     role: "admin",
     avatar: "/admin-avatar.png",
@@ -29,8 +29,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-3",
-    email: "instructor@academy.com",
-    password: "instructor123",
+    email: "instructor@promptcare.com",
+    password: "Instructor@123",
     name: "Michael Instructor",
     role: "instructor",
     avatar: "/instructor-avatar.png",
@@ -41,8 +41,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-4",
-    email: "finance@academy.com",
-    password: "finance123",
+    email: "finance@promptcare.com",
+    password: "Finance@123",
     name: "Emma Finance",
     role: "finance",
     avatar: "/finance-avatar.jpg",

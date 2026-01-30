@@ -2,6 +2,7 @@
 
 import { Logo } from "@/components/ui/logo"
 import { Button } from "@/components/ui/button"
+import { CurrencySelector } from "@/components/ui/currency-selector"
 import { ShoppingCart, Menu } from "lucide-react"
 import Link from "next/link"
 import { useAuthStore, useCartStore } from "@/lib/store"
@@ -53,6 +54,9 @@ export function PublicHeader() {
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Currency Selector */}
+          <CurrencySelector />
+
           {/* Cart */}
           <Link href="/cart">
             <Button variant="ghost" size="icon" className="relative">
