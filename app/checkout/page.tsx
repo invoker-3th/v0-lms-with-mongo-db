@@ -1,0 +1,200 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useAuthStore, useCartStore } from "@/lib/store"
+import { formatCurrency } from "@/lib/utils/format"
+import { CreditCard, Lock } from "lucide-react"
+import { mockDB } from "@/lib/mock-db"
+import { paystackService } from "@/lib/paystack"
+
+export default function CheckoutPage() {
+  const router = useRouter()
+  const { user } = useAuthStore()
+  const { items, clearCart } = useCartStore()
+  const [loading, setLoading] = useState(false)
+  const [billingInfo, setBillingInfo] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: "",
+  })
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/login?redirect=/checkout")
+    }
+    if (items.length === 0) {
+      router.push("/courses")
+    }
+  }, [user, items, router])
+
+  const courses = items.map((item) => mockDB.courses.find((c) => c.id === item.courseId)).filter(Boolean)
+  const subtotal = courses.reduce((sum, course) => sum + (course?.price || 0), 0)
+  const discount = 0
+  const total = subtotal - discount
+
+  const handlePayment = async () => {
+    if (!user) return
+
+    setLoading(true)
+
+    try {
+      // Initialize payment
+      const payment = await paystackService.initializePayment({
+        userId: user.id,
+        courseIds: items.map((item) => item.courseId),
+        amount: total,
+        email: billingInfo.email,
+      })
+
+      // In a real app, redirect to Paystack payment page
+      // For now, simulate payment completion after 2 seconds
+      setTimeout(async () => {
+        // Verify payment (simulate success)
+        const verified = await paystackService.verifyPayment(payment.reference)
+
+        if (verified) {
+          // Create enrollments
+          items.forEach((item) => {
+            mockDB.createEnrollment({
+              userId: user.id,
+              courseId: item.courseId,
+              progress: 0,
+              enrolledAt: new Date().toISOString(),
+              lastAccessedAt: new Date().toISOString(),
+            })
+          })
+
+          clearCart()
+          router.push(`/checkout/success?reference=${payment.reference}`)
+        } else {
+          router.push("/checkout/failed")
+        }
+      }, 2000)
+    } catch (error) {
+      console.error("Payment error:", error)
+      alert("Payment failed. Please try again.")
+      setLoading(false)
+    }
+  }
+
+  if (!user || items.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="min-h-screen bg-background py-12">
+      <div className="container max-w-5xl">
+        <h1 className="text-3xl font-bold mb-8 text-balance">Checkout</h1>
+
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Billing Information */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Billing Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    value={billingInfo.name}
+                    onChange={(e) => setBillingInfo({ ...billingInfo, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={billingInfo.email}
+                    onChange={(e) => setBillingInfo({ ...billingInfo, email: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={billingInfo.phone}
+                    onChange={(e) => setBillingInfo({ ...billingInfo, phone: e.target.value })}
+                    placeholder="+234 800 000 0000"
+                    required
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment Method</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3 p-4 border rounded-lg">
+                  <CreditCard className="h-6 w-6 text-primary" />
+                  <div>
+                    <p className="font-medium">Paystack Payment Gateway</p>
+                    <p className="text-sm text-muted-foreground">Secure payment powered by Paystack</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
+                  <Lock className="h-4 w-4" />
+                  <span>Your payment information is secure and encrypted</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Order Summary */}
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  {courses.map((course) => (
+                    <div key={course?.id} className="flex justify-between text-sm">
+                      <span className="line-clamp-1">{course?.title}</span>
+                      <span className="font-medium">{formatCurrency(course?.price || 0)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t pt-3 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Subtotal</span>
+                    <span>{formatCurrency(subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Discount</span>
+                    <span className="text-green-600">-{formatCurrency(discount)}</span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold border-t pt-2">
+                    <span>Total</span>
+                    <span>{formatCurrency(total)}</span>
+                  </div>
+                </div>
+
+                <Button className="w-full" size="lg" onClick={handlePayment} disabled={loading}>
+                  {loading ? "Processing..." : "Complete Payment"}
+                </Button>
+
+                <p className="text-xs text-muted-foreground text-center">
+                  By completing this purchase, you agree to our terms and conditions
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
