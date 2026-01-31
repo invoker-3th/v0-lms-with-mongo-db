@@ -4,13 +4,16 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-type PaymentAddresses = {
+type PaymentSettings = {
   ethAddress: string | null;
   btcAddress: string | null;
+  ethPrice: number | null;
+  btcPrice: number | null;
+  registrationPrice: number;
 };
 
 export default function PaymentRequiredPage() {
-  const [addresses, setAddresses] = useState<PaymentAddresses | null>(null);
+  const [settings, setSettings] = useState<PaymentSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
@@ -21,10 +24,13 @@ export default function PaymentRequiredPage() {
         const res = await fetch("/api/admin/payment");
         if (res.ok) {
           const data = await res.json();
-          const settings = data.settings;
-          setAddresses({
-            ethAddress: settings?.ethAddress || null,
-            btcAddress: settings?.btcAddress || null,
+          const s = data.settings;
+          setSettings({
+            ethAddress: s?.ethAddress || null,
+            btcAddress: s?.btcAddress || null,
+            ethPrice: s?.ethPrice || null,
+            btcPrice: s?.btcPrice || null,
+            registrationPrice: s?.registrationPrice || 300,
           });
         } else {
           setError("Failed to load payment addresses");
@@ -59,7 +65,7 @@ export default function PaymentRequiredPage() {
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-heading text-white mb-2">Payment Required</h1>
             <p className="text-[var(--text-secondary)]">
-              Complete your $300 payment to unlock access to all casting opportunities
+              Complete your ${settings?.registrationPrice || 300} payment to unlock access to all casting opportunities
             </p>
           </div>
 
@@ -78,10 +84,10 @@ export default function PaymentRequiredPage() {
           )}
 
           {/* Payment Addresses */}
-          {!loading && addresses && (
+          {!loading && settings && (
             <div className="space-y-6 mb-8">
               {/* ETH Payment Option */}
-              {addresses.ethAddress && (
+              {settings.ethAddress && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -92,29 +98,36 @@ export default function PaymentRequiredPage() {
                     <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                       <span className="text-2xl">⟠</span> Ethereum (ETH)
                     </h3>
-                    <span className="text-sm text-[var(--text-secondary)]">
-                      Amount: <span className="text-white font-semibold">0.1 ETH</span>
-                    </span>
+                    <div className="text-right">
+                      <div className="text-sm text-[var(--text-secondary)]">
+                        USD Amount: <span className="text-white font-semibold">${settings.registrationPrice}</span>
+                      </div>
+                      {settings.ethPrice && (
+                        <div className="text-xs text-[var(--text-secondary)] mt-1">
+                          ({(settings.registrationPrice / settings.ethPrice).toFixed(4)} ETH)
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-3">
                     <div className="bg-black/30 rounded p-4 font-mono text-sm">
-                      <p className="text-white break-all mb-2">{addresses.ethAddress}</p>
+                      <p className="text-white break-all mb-2">{settings.ethAddress}</p>
                       <button
-                        onClick={() => copyToClipboard(addresses.ethAddress || "", "ETH")}
+                        onClick={() => copyToClipboard(settings.ethAddress || "", "ETH")}
                         className="text-[var(--accent-gold)] hover:text-white transition text-xs"
                       >
                         {copied === "ETH" ? "✓ Copied" : "Copy Address"}
                       </button>
                     </div>
                     <p className="text-xs text-[var(--text-secondary)]">
-                      Send exactly 0.1 ETH to this address from your wallet. Once confirmed on-chain, your account will be automatically unlocked.
+                      Send the required amount to this address from your wallet. Once confirmed on-chain, your account will be automatically unlocked.
                     </p>
                   </div>
                 </motion.div>
               )}
 
               {/* BTC Payment Option */}
-              {addresses.btcAddress && (
+              {settings.btcAddress && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -125,28 +138,35 @@ export default function PaymentRequiredPage() {
                     <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                       <span className="text-2xl">₿</span> Bitcoin (BTC)
                     </h3>
-                    <span className="text-sm text-[var(--text-secondary)]">
-                      Amount: <span className="text-white font-semibold">0.005 BTC</span>
-                    </span>
+                    <div className="text-right">
+                      <div className="text-sm text-[var(--text-secondary)]">
+                        USD Amount: <span className="text-white font-semibold">${settings.registrationPrice}</span>
+                      </div>
+                      {settings.btcPrice && (
+                        <div className="text-xs text-[var(--text-secondary)] mt-1">
+                          ({(settings.registrationPrice / settings.btcPrice).toFixed(6)} BTC)
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-3">
                     <div className="bg-black/30 rounded p-4 font-mono text-sm">
-                      <p className="text-white break-all mb-2">{addresses.btcAddress}</p>
+                      <p className="text-white break-all mb-2">{settings.btcAddress}</p>
                       <button
-                        onClick={() => copyToClipboard(addresses.btcAddress || "", "BTC")}
+                        onClick={() => copyToClipboard(settings.btcAddress || "", "BTC")}
                         className="text-[var(--accent-gold)] hover:text-white transition text-xs"
                       >
                         {copied === "BTC" ? "✓ Copied" : "Copy Address"}
                       </button>
                     </div>
                     <p className="text-xs text-[var(--text-secondary)]">
-                      Send exactly 0.005 BTC to this address from your wallet. Once confirmed on-chain, your account will be automatically unlocked.
+                      Send the required amount to this address from your wallet. Once confirmed on-chain, your account will be automatically unlocked.
                     </p>
                   </div>
                 </motion.div>
               )}
 
-              {!addresses.ethAddress && !addresses.btcAddress && (
+              {!settings.ethAddress && !settings.btcAddress && (
                 <div className="p-4 bg-yellow-500/20 border border-yellow-500/30 rounded text-yellow-400 text-sm">
                   Payment addresses not configured yet. Please contact support.
                 </div>

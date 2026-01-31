@@ -18,12 +18,29 @@ export async function POST(req: Request) {
   try {
     const admin = await requireAdmin();
     const body = await req.json();
-    const { ethAddress, btcAddress } = body;
+    const { ethAddress, btcAddress, ethPrice, btcPrice, registrationPrice } = body;
 
     await connectDB();
+    const updateData: any = {
+      ethAddress: ethAddress || null,
+      btcAddress: btcAddress || null,
+      updatedBy: admin._id.toString(),
+    };
+
+    // Only update prices if they are provided and valid
+    if (ethPrice !== undefined && ethPrice !== null) {
+      updateData.ethPrice = ethPrice > 0 ? ethPrice : null;
+    }
+    if (btcPrice !== undefined && btcPrice !== null) {
+      updateData.btcPrice = btcPrice > 0 ? btcPrice : null;
+    }
+    if (registrationPrice !== undefined && registrationPrice !== null) {
+      updateData.registrationPrice = registrationPrice > 0 ? registrationPrice : 300;
+    }
+
     const updated = await Settings.findOneAndUpdate(
       { key: "payment" },
-      { $set: { ethAddress: ethAddress || null, btcAddress: btcAddress || null, updatedBy: admin._id.toString() } },
+      { $set: updateData },
       { upsert: true, new: true }
     );
 

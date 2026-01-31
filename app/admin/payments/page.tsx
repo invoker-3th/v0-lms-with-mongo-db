@@ -22,6 +22,9 @@ type PaginationInfo = {
 export default function AdminPaymentsPage() {
   const [ethAddress, setEthAddress] = useState("");
   const [btcAddress, setBtcAddress] = useState("");
+  const [ethPrice, setEthPrice] = useState("");
+  const [btcPrice, setBtcPrice] = useState("");
+  const [registrationPrice, setRegistrationPrice] = useState("300");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [users, setUsers] = useState<PendingUser[]>([]);
@@ -56,6 +59,9 @@ export default function AdminPaymentsPage() {
         if (settings) {
           setEthAddress(settings.ethAddress || "");
           setBtcAddress(settings.btcAddress || "");
+          setEthPrice(settings.ethPrice ? settings.ethPrice.toString() : "");
+          setBtcPrice(settings.btcPrice ? settings.btcPrice.toString() : "");
+          setRegistrationPrice(settings.registrationPrice ? settings.registrationPrice.toString() : "300");
         }
       }
 
@@ -81,10 +87,13 @@ export default function AdminPaymentsPage() {
         body: JSON.stringify({
           ethAddress: ethAddress || null,
           btcAddress: btcAddress || null,
+          ethPrice: ethPrice ? parseFloat(ethPrice) : null,
+          btcPrice: btcPrice ? parseFloat(btcPrice) : null,
+          registrationPrice: registrationPrice ? parseFloat(registrationPrice) : 300,
         }),
       });
       if (res.ok) {
-        alert("Payment addresses saved.");
+        alert("Payment settings saved successfully.");
       } else {
         const d = await res.json();
         alert(d.error || "Failed to save");
@@ -230,35 +239,107 @@ export default function AdminPaymentsPage() {
         )}
 
         <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-          <h2 className="text-xl text-white mb-3">Payment Addresses</h2>
+          <h2 className="text-xl text-white mb-3">Payment Settings</h2>
           <div className="space-y-3">
-            <div>
-              <label className="block text-sm text-[var(--text-secondary)] mb-1">
-                Ethereum Address
-              </label>
-              <input
-                value={ethAddress}
-                onChange={(e) => setEthAddress(e.target.value)}
-                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white"
-              />
+            {/* Crypto Addresses Section */}
+            <div className="border-b border-white/10 pb-4 mb-4">
+              <h3 className="text-sm text-[var(--accent-gold)] font-medium mb-3">Cryptocurrency Addresses</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                    Ethereum (ETH) Address
+                  </label>
+                  <input
+                    value={ethAddress}
+                    onChange={(e) => setEthAddress(e.target.value)}
+                    placeholder="0x..."
+                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white placeholder:text-white/30"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                    Bitcoin (BTC) Address
+                  </label>
+                  <input
+                    value={btcAddress}
+                    onChange={(e) => setBtcAddress(e.target.value)}
+                    placeholder="bc1q..."
+                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white placeholder:text-white/30"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm text-[var(--text-secondary)] mb-1">
-                Bitcoin Address
-              </label>
-              <input
-                value={btcAddress}
-                onChange={(e) => setBtcAddress(e.target.value)}
-                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white"
-              />
+
+            {/* Pricing Section */}
+            <div className="border-b border-white/10 pb-4 mb-4">
+              <h3 className="text-sm text-[var(--accent-gold)] font-medium mb-3">Pricing (in USD)</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                    Registration Price (USD)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white">$</span>
+                    <input
+                      type="number"
+                      min="1"
+                      step="0.01"
+                      value={registrationPrice}
+                      onChange={(e) => setRegistrationPrice(e.target.value)}
+                      placeholder="300"
+                      className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded text-white"
+                    />
+                  </div>
+                  <p className="text-xs text-[var(--text-secondary)] mt-1">Default amount talents must pay to register</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                      ETH Price Equivalent (USD)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white">$</span>
+                      <input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={ethPrice}
+                        onChange={(e) => setEthPrice(e.target.value)}
+                        placeholder="Optional"
+                        className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm"
+                      />
+                    </div>
+                    <p className="text-xs text-[var(--text-secondary)] mt-1">Amount in USD that equals registration price</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                      BTC Price Equivalent (USD)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white">$</span>
+                      <input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={btcPrice}
+                        onChange={(e) => setBtcPrice(e.target.value)}
+                        placeholder="Optional"
+                        className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm"
+                      />
+                    </div>
+                    <p className="text-xs text-[var(--text-secondary)] mt-1">Amount in USD that equals registration price</p>
+                  </div>
+                </div>
+              </div>
             </div>
+
             <div className="pt-2">
               <button
                 onClick={saveAddresses}
                 disabled={saving}
-                className="px-4 py-2 bg-[var(--accent-gold)] text-black rounded"
+                className="px-4 py-2 bg-[var(--accent-gold)] text-black rounded font-medium hover:bg-[#d4b364] disabled:opacity-50 transition"
               >
-                {saving ? "Saving..." : "Save Addresses"}
+                {saving ? "Saving..." : "Save Settings"}
               </button>
             </div>
           </div>

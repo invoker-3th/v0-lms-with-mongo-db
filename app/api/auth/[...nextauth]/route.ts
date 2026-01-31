@@ -37,27 +37,60 @@ export const authOptions: NextAuthConfig = {
         const password = credentials.password as string;
 
         await connectDB();
-        const user = await User.findOne({ email });
+        let user = await User.findOne({ email });
 
-        if (!user || !user.passwordHash) {
-          return null;
+        // If user exists and has a password hash, verify it
+        if (user && user.passwordHash) {
+          const isValid = await bcrypt.compare(password, user.passwordHash);
+          if (!isValid) return null;
+
+          return {
+            id: user._id.toString(),
+            email: user.email!,
+            name: user.name,
+            image: user.image,
+            role: user.role,
+            emailVerified: !!user.emailVerified,
+            profileCompletion: user.profileCompletion || 0,
+          };
         }
 
-        const isValid = await bcrypt.compare(password, user.passwordHash);
+        // If user doesn't exist or has no password, check hardcoded admin credentials from env
+        const adminList = (process.env.ADMIN_ACCOUNTS || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+        const adminPassword = process.env.ADMIN_PASSWORD;
 
-        if (!isValid) {
-          return null;
+        if (adminList.includes(email.toLowerCase()) && adminPassword && password === adminPassword) {
+          // Upsert admin user and mark email as verified
+          const passwordHash = await bcrypt.hash(password, 12);
+          const update = {
+            email,
+            role: "ADMIN",
+            emailVerified: new Date(),
+            passwordHash,
+            name: "Admin",
+          } as any;
+
+          const adminUser = await User.findOneAndUpdate({ email }, update, {
+            upsert: true,
+            new: true,
+            setDefaultsOnInsert: true,
+          });
+
+          if (!adminUser) return null;
+
+          return {
+            id: adminUser._id.toString(),
+            email: adminUser.email!,
+            name: adminUser.name,
+            image: adminUser.image,
+            role: adminUser.role,
+            emailVerified: !!adminUser.emailVerified,
+            profileCompletion: adminUser.profileCompletion || 0,
+          };
         }
 
-        return {
-          id: user._id.toString(),
-          email: user.email!,
-          name: user.name,
-          image: user.image,
-          role: user.role,
-          emailVerified: !!user.emailVerified,
-          profileCompletion: user.profileCompletion || 0,
-        };
+        // Otherwise deny access
+        return null;
       },
     }),
   ],
