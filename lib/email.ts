@@ -1,12 +1,6 @@
-/**
- * Email service utility
- * Sends email notifications for application status changes and messages
- * 
- * Uses Resend API (free tier available)
- * Set RESEND_API_KEY in environment variables
- */
+import { Resend } from 'resend';
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@hubmovies.com";
 
 interface EmailOptions {
@@ -22,35 +16,27 @@ interface EmailOptions {
 export async function sendEmail({ to, subject, html }: EmailOptions): Promise<boolean> {
   // If Resend API key is not configured, log and return false
   // This allows the app to work without email in development
-  if (!RESEND_API_KEY) {
+  if (!process.env.RESEND_API_KEY) {
     console.log("[Email] Service not configured. Would send:", { to, subject });
     return false;
   }
 
   try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to,
-        subject,
-        html,
-      }),
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject,
+      html,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error("[Email] Failed to send:", error);
+    if (error) {
+      console.error("[Email] Failed:", error);
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error("[Email] Error sending email:", error);
+    console.error("[Email] Error:", error);
     return false;
   }
 }

@@ -47,10 +47,6 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Performance indexes
-UserSchema.index({ email: 1 });
-UserSchema.index({ role: 1 });
-
 export default mongoose.models.User || mongoose.model("User", UserSchema);
 
 

@@ -1,62 +1,128 @@
-# Resend Setup — Quick & Simple Guide ✅
+# Resend Setup — Complete Configuration Guide ✅
 
-Goal: Get email sending working using Resend (simple steps you can follow right now).
+Goal: Send transactional emails using Resend with Next.js.
 
 ---
 
-## 1) Sign up & get your API key
-- Go to https://resend.com and sign up.
-- In the Resend dashboard, create an API key and copy it. It looks like: `re_********`.
+## 1) Installation & Dependencies
+✅ **Already done:**
+- Resend SDK installed: `npm install resend` (v6.9.1)
+- SDK integrated in `lib/email.ts`
 
-## 2) Put the key in your local env
-- Open your project's `.env.local` (it is gitignored).
-- Add these lines (replace the example key):
-
+## 2) Environment Variables Setup
+Add to `.env.local` (for local development):
 ```
-RESEND_API_KEY=re_your_api_key_here
+RESEND_API_KEY=re_your_actual_api_key_here
 FROM_EMAIL=noreply@yourdomain.com
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-- Save the file and restart your dev server (`npm run dev` or `npm run build` / redeploy).
+**For Production (Vercel):**
+- Go to your Vercel project → **Settings → Environment Variables**
+- Add the same three variables above
+- Redeploy your application
 
-## 3) Confirm the app uses Resend (already implemented in this project)
-- This repo uses `lib/email.ts` which calls Resend when `RESEND_API_KEY` is set.
-- Relevant files:
-  - `lib/email.ts` (the send functions)
-  - `app/api/auth/send-otp/route.ts` (sends OTP using `sendOtpEmail`)
+## 3) Get Your API Key
+1. Sign up at https://resend.com
+2. Go to **API Keys** in the dashboard
+3. Create a new API key and copy it
+4. Add it to your `.env.local` as `RESEND_API_KEY=re_...`
 
-## 4) Quick local test options
-- Use the app UI: open `/auth` and request a code/verification. Check your inbox.
-- Or run a cURL test to confirm Resend accepts your key:
+## 4) Verify Your Domain (Recommended for Production)
+1. In Resend Dashboard → **Domains** → **Add Domain**
+2. Enter your domain (e.g., `hubmovies.com`)
+3. Resend will provide SPF and DKIM records to add to your DNS
+4. Add the DNS records in your domain registrar
+5. Wait 5-30 minutes for verification (check dashboard for `verified` status)
 
-```bash
-curl -s -X POST https://api.resend.com/emails \
-  -H "Authorization: Bearer $RESEND_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"from":"noreply@yourdomain.com","to":"enjayjerey@example.com","subject":"Test","html":"Hello"}'
+**Note:** Use a subdomain like `noreply@updates.hubmovies.com` for better deliverability.
+
+## 5) How It Works in This Project
+The email system is centralized in `lib/email.ts` with the following functions:
+
+- **`sendEmail()`** - Core function that sends emails via Resend SDK
+- **`sendOtpEmail()`** - OTP/sign-in codes (used in `/auth`)
+- **`sendVerificationEmail()`** - Email verification for new accounts
+- **`sendPasswordResetEmail()`** - Password reset links
+- **`sendApplicationStatusEmail()`** - Talent notifications (accepted/rejected)
+- **`sendMessageNotificationEmail()`** - New message notifications
+
+All functions return a boolean (true = success, false = failure).
+
+## 6) Testing Locally
+1. **UI Test:** Go to `/auth` → request sign-in code → check inbox
+2. **Dashboard:** Visit https://resend.com/emails to view all sent emails and their status
+
+## 7) Implementation - Core Function (lib/email.ts)
+```typescript
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@hubmovies.com";
+
+export async function sendEmail({ to, subject, html }: EmailOptions): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) {
+    console.log("[Email] Service not configured");
+    return false;
+  }
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject,
+      html,
+    });
+
+    if (error) {
+      console.error("[Email] Failed:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("[Email] Error:", error);
+    return false;
+  }
+}
 ```
-- A successful response means Resend will accept messages from your app.
 
-## 5) Deploying (Vercel or other hosts)
-- Add the same `RESEND_API_KEY` and `FROM_EMAIL` to your host's environment variables.
-  - For Vercel: go to your Project → Settings → Environment Variables → add `RESEND_API_KEY` and `FROM_EMAIL`.
-- Redeploy the site after adding the variables.
+## 8) Usage in API Routes
+```typescript
+import { sendOtpEmail } from "@/lib/email";
 
-## 6) Troubleshooting quick tips
-- 401 Unauthorized → Wrong API key. Re-copy the key from the dashboard.
-- 422 Invalid sender → `FROM_EMAIL` is not allowed. Try a verified sender or `noreply@yourdomain.com`.
-- 429 Too many requests → You hit rate limits. Wait or check plan limits.
-- No emails in inbox → Check the Resend Dashboard (sent logs) and server logs (Next.js console). The dashboard shows status and reasons for failures.
-- Local dev note: If your app sends links that include `NEXTAUTH_URL`, make sure `NEXTAUTH_URL` is set correctly (e.g., `http://localhost:3000`) so links in emails point to your dev site.
+export async function POST(req: Request) {
+  const { email, otp } = await req.json();
+  
+  const success = await sendOtpEmail(email, otp);
+  if (!success) {
+    return Response.json({ error: "Failed to send OTP" }, { status: 500 });
+  }
+  
+  return Response.json({ success: true });
+}
+```
 
-## 7) Security
-- Do NOT commit your API keys. Keep them in `.env.local` (gitignored) and in your host environment settings.
-- Rotate keys if you believe they were exposed.
+## 9) Troubleshooting
 
-## 8) Extra help
-- Resend docs: https://resend.com/docs
-- If you want, I can add a small endpoint that sends a test email from the app so you can click a button to verify — say the word and I’ll add it.
+| Issue | Solution |
+|-------|----------|
+| **401 Unauthorized** | Check API key is correct in `.env.local` and dashboard |
+| **422 Invalid Sender** | Use a verified domain or email (e.g., `noreply@yourdomain.com`) |
+| **429 Too Many Requests** | Hit rate limits. Check your Resend plan limits. |
+| **Emails not arriving** | Check Resend dashboard for failure reasons; verify SPF/DKIM if domain verified |
+| **Links not working** | Ensure `NEXT_PUBLIC_APP_URL` is set correctly for your environment |
 
----
+## 10) Best Practices
 
-If you want this even shorter (2–3 lines), I can make a 1-minute checklist version — tell me which format you prefer.
+- ✅ **Use subdomains** for email (e.g., `noreply@updates.hubmovies.com`)
+- ✅ **Verify domains** for production (improves deliverability)
+- ✅ **Never commit API keys** - use `.env.local` (gitignored)
+- ✅ **Check Resend Dashboard** for email logs and delivery status
+
+## 11) Useful Resources
+
+- **Resend Docs:** https://resend.com/docs
+- **Next.js Guide:** https://resend.com/docs/send-with-nextjs
+- **Domain Verification:** https://resend.com/docs/dashboard/domains/introduction
+- **Dashboard:** https://resend.com/emails
