@@ -21,6 +21,19 @@ export const authOptions: NextAuthConfig = {
         },
       },
       from: process.env.EMAIL_FROM || "noreply@hubmovies.com",
+      // We override the default sendVerificationRequest to send numeric OTPs
+      async sendVerificationRequest({ identifier /*, url, provider, token */ }) {
+        try {
+          // Call our API route to create and send the OTP
+          await fetch(`${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/auth/send-otp`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: identifier }),
+          });
+        } catch (err) {
+          console.error("Failed to trigger send-otp API:", err);
+        }
+      },
     }),
     CredentialsProvider({
       name: "Email",
@@ -128,6 +141,65 @@ export const authOptions: NextAuthConfig = {
         // Otherwise deny access
         console.warn(`Authorization failed for ${email}`);
         throw new Error("INVALID_CREDENTIALS");
+      },
+    }),
+
+    // OTP Credentials Provider - allows signing in with email + numeric OTP
+    CredentialsProvider({
+      id: "otp",
+      name: "OTP",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        otp: { label: "One-time code", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.otp) {
+          console.warn("OTP authorize called with missing fields");
+          throw new Error("MISSING_OTP");
+        }
+
+        const email = (credentials.email as string).toLowerCase().trim();
+        const otp = (credentials.otp as string).trim();
+
+        try {
+          await connectDB();
+
+          // Find matching verification token that starts with the OTP
+          const VerificationToken = (await import('@/models/verification-token')).default;
+          const regex = new RegExp(`^${otp}:`);
+          const vt = await VerificationToken.findOne({ identifier: email, token: regex, expires: { $gt: new Date() } });
+
+          if (!vt) {
+            console.warn(`Invalid or expired OTP for ${email}`);
+            throw new Error("INVALID_OTP");
+          }
+
+          // Consume token
+          await VerificationToken.deleteOne({ _id: vt._id });
+
+          // Find or create user
+          const UserModel = (await import('@/models/user')).default;
+          let user = await UserModel.findOne({ email });
+          if (!user) {
+            user = await UserModel.create({ email, emailVerified: new Date(), name: undefined });
+          } else if (!user.emailVerified) {
+            user.emailVerified = new Date();
+            await user.save();
+          }
+
+          return {
+            id: user._id.toString(),
+            email: user.email!,
+            name: user.name,
+            image: user.image,
+            role: user.role,
+            emailVerified: !!user.emailVerified,
+            profileCompletion: user.profileCompletion || 0,
+          };
+        } catch (err: any) {
+          console.error("OTP authorize error:", err);
+          throw new Error("INVALID_OTP");
+        }
       },
     }),
   ],

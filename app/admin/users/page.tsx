@@ -200,7 +200,7 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+        <div className="bg-white/5 border border-white/10 rounded-lg p-4 sm:p-6">
           <div className="flex gap-3 mb-4">
             <input
               value={search}
