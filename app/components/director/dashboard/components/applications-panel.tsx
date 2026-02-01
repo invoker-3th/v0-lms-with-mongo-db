@@ -31,6 +31,7 @@ export default function ApplicationsPanel({
   onReject,
   onMessage,
   onBulkAction,
+  onViewProfile,
 }: ApplicationsPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "submitted" | "shortlisted" | "rejected">("all");

@@ -27,6 +27,7 @@ export default function ApplicationRow({
   onShortlist,
   onReject,
   onMessage,
+  onViewProfile,
   selected = false,
   onToggleSelect,
 }: ApplicationRowProps) {

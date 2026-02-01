@@ -67,6 +67,7 @@ export default function TalentProfilePage() {
             skills: data.profile.skills || [],
             experience: data.profile.experience || [],
             portfolio: data.profile.portfolio || [],
+            cv: data.profile.cv || "",
           });
         }
       } catch (error) {
