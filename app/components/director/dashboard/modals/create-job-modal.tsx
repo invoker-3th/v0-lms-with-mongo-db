@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import ModalShell from "@/app/components/modals/modal-shell";
 
 type CreateJobModalProps = {
   onClose: () => void;
+  showDirectorSelector?: boolean; // when true, fetches list of directors and lets admin assign one
   onSubmit: (jobData: {
     title: string;
     type: string;
@@ -13,10 +14,11 @@ type CreateJobModalProps = {
     budget: string;
     deadline: string;
     description: string;
+    directorId?: string;
   }) => void;
 };
 
-export default function CreateJobModal({ onClose, onSubmit }: CreateJobModalProps) {
+export default function CreateJobModal({ onClose, onSubmit, showDirectorSelector = false }: CreateJobModalProps) {
   const [formData, setFormData] = useState({
     title: "",
     type: "",
@@ -26,6 +28,28 @@ export default function CreateJobModal({ onClose, onSubmit }: CreateJobModalProp
     description: "",
   });
   const [loading, setLoading] = useState(false);
+
+  // Director selector states (used only when showDirectorSelector is true)
+  const [directors, setDirectors] = useState<Array<{ id: string; name?: string; email?: string }>>([]);
+  const [selectedDirectorId, setSelectedDirectorId] = useState<string>("");
+
+  useEffect(() => {
+    if (!showDirectorSelector) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/directors');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setDirectors(data.directors || []);
+      } catch (err) {
+        console.error('Failed to fetch directors for selector:', err);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [showDirectorSelector]);
 
   // Make inputs full width on mobile and arrange responsive grids
   // (mobile-first: single column, switch to two columns on sm+)
@@ -42,7 +66,9 @@ export default function CreateJobModal({ onClose, onSubmit }: CreateJobModalProp
 
     setLoading(true);
     try {
-      await onSubmit(formData);
+      // Include directorId when set (admin flow)
+      const payload = { ...formData, directorId: selectedDirectorId || undefined };
+      await onSubmit(payload);
       // Reset form on success
       setFormData({
         title: "",
@@ -52,6 +78,7 @@ export default function CreateJobModal({ onClose, onSubmit }: CreateJobModalProp
         deadline: "",
         description: "",
       });
+      setSelectedDirectorId("");
     } catch (error) {
       // Error handling is done in parent
     } finally {
@@ -92,6 +119,25 @@ export default function CreateJobModal({ onClose, onSubmit }: CreateJobModalProp
               required
             />
           </div>
+
+          {/* Director selector (admins only) */}
+          {showDirectorSelector && (
+            <div>
+              <label className="block text-sm text-(--text-secondary) mb-2">Assign to Director (optional)</label>
+              <select
+                value={selectedDirectorId}
+                onChange={(e) => setSelectedDirectorId(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 p-3 rounded text-white focus:outline-none"
+              >
+                <option value="">Post as Admin (default)</option>
+                {directors.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name ? `${d.name} (${d.email})` : d.email}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className={gridColsClass}>
             <div>

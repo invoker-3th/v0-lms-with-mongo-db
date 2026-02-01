@@ -125,6 +125,7 @@ export default function AdminJobsPage() {
         {/* Create Job Modal */}
         {showCreate && (
           <CreateJobModal
+            showDirectorSelector={true}
             onClose={() => setShowCreate(false)}
             onSubmit={async (data) => {
               try {
