@@ -7,6 +7,7 @@ export default function SendOtpPage() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [stage, setStage] = useState<"enter" | "sent">("enter");
+  const [emailSent, setEmailSent] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -25,13 +26,15 @@ export default function SendOtpPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
+      const data = await res.json();
       if (res.ok) {
-        console.log("✅ OTP sent successfully", { email });
+        console.log("✅ OTP sent successfully", { email, emailSent: data?.emailSent });
+        setEmailSent(!!data?.emailSent);
         setStage("sent");
       } else {
-        const data = await res.json();
         console.error("❌ Failed to send OTP", { status: res.status, error: data?.error, email });
         setError(data?.error || "Failed to send OTP");
+        setEmailSent(!!data?.emailSent);
       }
     } catch (err) {
       console.error("❌ Error sending OTP:", err, { email });
@@ -102,6 +105,11 @@ export default function SendOtpPage() {
                 Cancel
               </button>
             </div>
+            {emailSent === false && (
+              <div className="mt-3 text-sm text-yellow-300">
+                OTP not delivered — email service may be unconfigured. Admins can check server logs.
+              </div>
+            )}
           </form>
         ) : (
           <form onSubmit={verifyOtp} className="space-y-3">
@@ -120,6 +128,11 @@ export default function SendOtpPage() {
                 Resend / Change Email
               </button>
             </div>
+            {emailSent === false && (
+              <div className="mt-3 text-sm text-yellow-300">
+                We couldn't send the email — you can try again or contact support.
+              </div>
+            )}
           </form>
         )}
       </div>

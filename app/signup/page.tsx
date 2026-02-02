@@ -61,8 +61,12 @@ function SignupContent() {
       const data = await res.json();
 
       if (res.ok) {
-        console.log("✅ Account created successfully", { email, role });
-        setMessage("Account created! Please enter the OTP we just sent to your email.");
+        console.log("✅ Account created successfully", { email, role, emailSent: data?.emailSent });
+        if (data?.emailSent) {
+          setMessage("Account created! Please enter the OTP we just sent to your email.");
+        } else {
+          setMessage("Account created! We couldn't send the OTP email — you can still proceed to request an OTP.");
+        }
         // Redirect to OTP entry page after a short delay
         setTimeout(() => {
           router.push("/auth/send-otp");
