@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import ModalShell from "./modal-shell";
@@ -386,6 +387,7 @@ export default function ApplyFlowModal({
   } | null>(null);
   const [checkingProfile, setCheckingProfile] = useState(true);
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const [formData, setFormData] = useState<ApplyFormData>({
     media: null,
@@ -395,6 +397,15 @@ export default function ApplyFlowModal({
   // Check profile completion and applied status when modal opens
   useEffect(() => {
     async function checkStatus() {
+      // Wait until session status is resolved
+      if (status === "loading") return;
+
+      // If unauthenticated, redirect to auth page instead of calling protected APIs
+      if (!session) {
+        router.push("/auth");
+        return;
+      }
+
       try {
         // Check profile completion
         const profileRes = await fetch("/api/talent/profile/completion");
@@ -417,7 +428,7 @@ export default function ApplyFlowModal({
     }
 
     checkStatus();
-  }, [jobId]);
+  }, [jobId, session, status]);
 
   // Set initial step based on profile completion
   useEffect(() => {
