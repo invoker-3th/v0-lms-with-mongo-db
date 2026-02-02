@@ -29,35 +29,49 @@ export const authOptions: NextAuthConfig = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            console.error("❌ Missing credentials", { hasEmail: !!credentials?.email, hasPassword: !!credentials?.password });
+            return null;
+          }
+
+          const email = credentials.email as string;
+          const password = credentials.password as string;
+
+          console.log("🔐 Attempting to connect to MongoDB...", { email });
+          await connectDB();
+          console.log("✅ MongoDB connected");
+
+          const user = await User.findOne({ email });
+          console.log("👤 User lookup:", { found: !!user, email });
+
+          if (!user || !user.passwordHash) {
+            console.error("❌ User not found or no password hash", { email });
+            return null;
+          }
+
+          const isValid = await bcrypt.compare(password, user.passwordHash);
+          console.log("🔑 Password validation:", { isValid, email });
+
+          if (!isValid) {
+            console.error("❌ Invalid password", { email });
+            return null;
+          }
+
+          console.log("✅ Credentials verified, returning user object", { email, role: user.role });
+          return {
+            id: user._id.toString(),
+            email: user.email!,
+            name: user.name,
+            image: user.image,
+            role: user.role,
+            emailVerified: !!user.emailVerified,
+            profileCompletion: user.profileCompletion || 0,
+          };
+        } catch (error) {
+          console.error("❌ Authorize error:", { error: error instanceof Error ? error.message : String(error) });
+          throw error;
         }
-
-        const email = credentials.email as string;
-        const password = credentials.password as string;
-
-        await connectDB();
-        const user = await User.findOne({ email });
-
-        if (!user || !user.passwordHash) {
-          return null;
-        }
-
-        const isValid = await bcrypt.compare(password, user.passwordHash);
-
-        if (!isValid) {
-          return null;
-        }
-
-        return {
-          id: user._id.toString(),
-          email: user.email!,
-          name: user.name,
-          image: user.image,
-          role: user.role,
-          emailVerified: !!user.emailVerified,
-          profileCompletion: user.profileCompletion || 0,
-        };
       },
     }),
   ],
@@ -67,7 +81,7 @@ export const authOptions: NextAuthConfig = {
   },
   pages: {
     signIn: "/auth",
-    verifyRequest: "/auth/check-email",
+    verifyRequest: "/auth/send-otp",
     error: "/auth/error",
   },
   callbacks: {
