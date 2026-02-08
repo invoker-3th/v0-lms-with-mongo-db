@@ -54,6 +54,12 @@ export async function GET() {
         experience: user.experience || [],
         portfolio: user.portfolio || [],
         cv: user.cv || null,
+        locationCity: user.locationCity || "",
+        locationState: user.locationState || "",
+        locationCountry: user.locationCountry || "",
+        locationAddress1: user.locationAddress1 || "",
+        locationAddress2: user.locationAddress2 || "",
+        locationPostalCode: user.locationPostalCode || "",
         profileCompletion: completion.score,
         verificationTier: tier,
         paymentConfirmed: !!user.paymentConfirmed,
@@ -111,6 +117,12 @@ export async function PATCH(req: Request) {
       experience,
       portfolio,
       cv,
+      locationCity,
+      locationState,
+      locationCountry,
+      locationAddress1,
+      locationAddress2,
+      locationPostalCode,
     } = body;
 
     // Update user fields
@@ -124,6 +136,12 @@ export async function PATCH(req: Request) {
     if (experience !== undefined) updateData.experience = experience;
     if (portfolio !== undefined) updateData.portfolio = portfolio;
     if (cv !== undefined) updateData.cv = cv;
+    if (locationCity !== undefined) updateData.locationCity = locationCity;
+    if (locationState !== undefined) updateData.locationState = locationState;
+    if (locationCountry !== undefined) updateData.locationCountry = locationCountry;
+    if (locationAddress1 !== undefined) updateData.locationAddress1 = locationAddress1;
+    if (locationAddress2 !== undefined) updateData.locationAddress2 = locationAddress2;
+    if (locationPostalCode !== undefined) updateData.locationPostalCode = locationPostalCode;
 
     // Update user
     const user = await User.findByIdAndUpdate(
@@ -163,6 +181,12 @@ export async function PATCH(req: Request) {
         experience: user.experience || [],
         portfolio: user.portfolio || [],
         cv: user.cv || null,
+        locationCity: user.locationCity || "",
+        locationState: user.locationState || "",
+        locationCountry: user.locationCountry || "",
+        locationAddress1: user.locationAddress1 || "",
+        locationAddress2: user.locationAddress2 || "",
+        locationPostalCode: user.locationPostalCode || "",
         profileCompletion: completion.score,
         verificationTier: tier,
         paymentConfirmed: !!user.paymentConfirmed,

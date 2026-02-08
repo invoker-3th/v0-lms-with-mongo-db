@@ -8,6 +8,7 @@ type Talent = {
   role: string;
   location: string;
   image: string;
+  email?: string;
   bio?: string;
   verified?: boolean;
 };
@@ -89,10 +90,13 @@ export default function TalentProfileModal({ talent, onClose }: Props) {
                   Close
                 </button>
 
-                {talent.verified && (
-                  <button className="px-6 py-3 bg-(--accent-gold) text-black font-semibold tracking-wide hover:opacity-90 transition">
+                {talent.verified && talent.email && (
+                  <a
+                    href={`mailto:${talent.email}?subject=Talent%20Opportunity`}
+                    className="px-6 py-3 bg-(--accent-gold) text-black font-semibold tracking-wide hover:opacity-90 transition text-center"
+                  >
                     Contact Talent
-                  </button>
+                  </a>
                 )}
               </div>
             </div>

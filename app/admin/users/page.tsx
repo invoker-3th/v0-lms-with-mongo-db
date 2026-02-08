@@ -288,7 +288,17 @@ export default function AdminUsersPage() {
                   <p className="text-(--text-secondary)">Loading...</p>
                 ) : profileData ? (
                   <div className="space-y-3 text-sm text-(--text-secondary)">
-                    <div>Email: <span className="text-white">{profileData.email}</span></div>
+                    <div className="flex items-center justify-between gap-3">
+                      <div>Email: <span className="text-white">{profileData.email}</span></div>
+                      {profileData?.role === "TALENT" && profileData?.email && (
+                        <a
+                          href={`mailto:${profileData.email}?subject=HubMovies%20Support`}
+                          className="px-2 py-1 border border-white/20 text-white rounded text-xs hover:border-white/40 transition"
+                        >
+                          Email Talent
+                        </a>
+                      )}
+                    </div>
                     <div>Role: <span className="text-white">{profileData.role}</span></div>
                     <div>Phone: <span className="text-white">{profileData.phone || '-'}</span></div>
                     <div>Bio: <span className="text-white">{profileData.bio || '-'}</span></div>

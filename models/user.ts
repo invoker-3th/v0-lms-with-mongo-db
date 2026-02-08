@@ -34,6 +34,13 @@ const UserSchema = new mongoose.Schema(
     experience: [{ type: String }],
     portfolio: [{ type: String }], // Array of media URLs
     cv: { type: String }, // CV / resume URL
+    // Location (talent)
+    locationCity: { type: String },
+    locationState: { type: String },
+    locationCountry: { type: String },
+    locationAddress1: { type: String },
+    locationAddress2: { type: String },
+    locationPostalCode: { type: String },
     // Payment tracking (talent)
     paymentConfirmed: { type: Boolean, default: false, index: true },
     paymentMethod: { type: String },

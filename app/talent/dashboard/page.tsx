@@ -251,7 +251,7 @@ export default function TalentDashboard() {
       <TalentSidebar />
 
       {/* Dashboard Container */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 pt-24 pb-8 sm:px-6 sm:pt-32 sm:pb-12 w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-12 w-full">
         {/* Dashboard Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

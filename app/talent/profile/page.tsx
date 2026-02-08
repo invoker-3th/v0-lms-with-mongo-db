@@ -17,6 +17,12 @@ type ProfileData = {
   skills: string[];
   experience: string[];
   portfolio: string[];
+  locationCity?: string;
+  locationState?: string;
+  locationCountry?: string;
+  locationAddress1?: string;
+  locationAddress2?: string;
+  locationPostalCode?: string;
   profileCompletion: number;
   verificationTier: string;
   paymentConfirmed: boolean;
@@ -48,6 +54,12 @@ export default function TalentProfilePage() {
     experience: [] as string[],
     portfolio: [] as string[],
     cv: "",
+    locationCity: "",
+    locationState: "",
+    locationCountry: "",
+    locationAddress1: "",
+    locationAddress2: "",
+    locationPostalCode: "",
   });
 
   const [skillInput, setSkillInput] = useState("");
@@ -70,6 +82,12 @@ export default function TalentProfilePage() {
             experience: data.profile.experience || [],
             portfolio: data.profile.portfolio || [],
             cv: data.profile.cv || "",
+            locationCity: data.profile.locationCity || "",
+            locationState: data.profile.locationState || "",
+            locationCountry: data.profile.locationCountry || "",
+            locationAddress1: data.profile.locationAddress1 || "",
+            locationAddress2: data.profile.locationAddress2 || "",
+            locationPostalCode: data.profile.locationPostalCode || "",
           });
         }
       } catch (error) {
@@ -361,7 +379,7 @@ export default function TalentProfilePage() {
       <TalentSidebar />
 
       {/* Dashboard Container */}
-      <div className="relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-12 w-full">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 pt-16 sm:pt-20 pb-12 w-full">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -732,11 +750,102 @@ export default function TalentProfilePage() {
             )}
           </motion.div>
 
-          {/* Section 5: Experience */}
+          {/* Section 5: Location */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.55 }}
+            className="p-6 bg-white/5 border border-white/10 rounded"
+          >
+            <h2 className="text-xl font-heading text-white mb-6">Location</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-2 font-body">
+                  City
+                </label>
+                <input
+                  type="text"
+                  value={formData.locationCity}
+                  onChange={(e) => setFormData({ ...formData, locationCity: e.target.value })}
+                  placeholder="City"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded text-white placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-gold)]/50 font-body"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-2 font-body">
+                  State / Region
+                </label>
+                <input
+                  type="text"
+                  value={formData.locationState}
+                  onChange={(e) => setFormData({ ...formData, locationState: e.target.value })}
+                  placeholder="State or region"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded text-white placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-gold)]/50 font-body"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-2 font-body">
+                  Country
+                </label>
+                <input
+                  type="text"
+                  value={formData.locationCountry}
+                  onChange={(e) => setFormData({ ...formData, locationCountry: e.target.value })}
+                  placeholder="Country"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded text-white placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-gold)]/50 font-body"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-2 font-body">
+                  Postal Code
+                </label>
+                <input
+                  type="text"
+                  value={formData.locationPostalCode}
+                  onChange={(e) => setFormData({ ...formData, locationPostalCode: e.target.value })}
+                  placeholder="Postal code"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded text-white placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-gold)]/50 font-body"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-2 font-body">
+                  Address Line 1
+                </label>
+                <input
+                  type="text"
+                  value={formData.locationAddress1}
+                  onChange={(e) => setFormData({ ...formData, locationAddress1: e.target.value })}
+                  placeholder="Street address"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded text-white placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-gold)]/50 font-body"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-2 font-body">
+                  Address Line 2
+                </label>
+                <input
+                  type="text"
+                  value={formData.locationAddress2}
+                  onChange={(e) => setFormData({ ...formData, locationAddress2: e.target.value })}
+                  placeholder="Apartment, suite, etc."
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded text-white placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-gold)]/50 font-body"
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Section 6: Experience */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.65 }}
             className="p-6 bg-white/5 border border-white/10 rounded"
           >
             <h2 className="text-xl font-heading text-white mb-6">Experience</h2>

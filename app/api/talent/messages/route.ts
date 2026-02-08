@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Message from "@/models/message";
+import User from "@/models/user";
 import { requireVerifiedUser } from "@/lib/auth-helpers";
 
 /**
@@ -60,6 +61,13 @@ export async function GET(req: Request) {
     // Fetch messages, sorted by creation date (oldest first for conversation view)
     const messages = await Message.find(query).sort({ createdAt: 1 });
 
+    const senderIds = [...new Set(messages.map((msg) => msg.senderId))];
+    const senders = await User.find({ _id: { $in: senderIds } })
+      .select("_id name email");
+    const senderMap = new Map(
+      senders.map((u) => [u._id.toString(), { name: u.name, email: u.email }])
+    );
+
     // Format messages for response
     const formattedMessages = messages.map((msg) => ({
       _id: msg._id.toString(),
@@ -69,6 +77,8 @@ export async function GET(req: Request) {
       talentId: msg.talentId,
       senderId: msg.senderId,
       senderRole: msg.senderRole,
+      senderName: senderMap.get(msg.senderId)?.name || null,
+      senderEmail: senderMap.get(msg.senderId)?.email || null,
       message: msg.message,
       deliveryMethod: msg.deliveryMethod,
       sent: msg.sent,
