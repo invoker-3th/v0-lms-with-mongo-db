@@ -19,8 +19,7 @@
  */
 
 import User from "@/models/user";
-
-export const MIN_PROFILE_COMPLETION = 70;
+import { MIN_PROFILE_COMPLETION } from "@/lib/constants";
 
 export interface ProfileCompletionResult {
   score: number;

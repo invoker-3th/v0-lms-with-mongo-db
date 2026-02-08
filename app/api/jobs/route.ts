@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import Job from "@/models/job";
 import User from "@/models/user";
 import { getTrustLevel, getDirectorCapabilities } from "@/lib/director-trust";
-import { MIN_PROFILE_COMPLETION } from "@/lib/profile-completion";
+import { MIN_PROFILE_COMPLETION } from "@/lib/constants";
 
 /**
  * GET /api/jobs

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function SendOtpPage() {
+function SendOtpContent() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [stage, setStage] = useState<"enter" | "sent">("enter");
@@ -158,5 +158,19 @@ export default function SendOtpPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SendOtpPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
+          <p className="text-[var(--text-secondary)]">Loading...</p>
+        </div>
+      }
+    >
+      <SendOtpContent />
+    </Suspense>
   );
 }

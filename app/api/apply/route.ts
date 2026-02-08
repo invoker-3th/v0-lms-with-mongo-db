@@ -4,7 +4,7 @@ import cloudinary from "@/lib/cloudinary";
 import Application from "@/models/application";
 import User from "@/models/user";
 import { requireVerifiedUser } from "@/lib/auth-helpers";
-import { MIN_PROFILE_COMPLETION } from "@/lib/profile-completion";
+import { MIN_PROFILE_COMPLETION } from "@/lib/constants";
 
 // Media validation constants
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB

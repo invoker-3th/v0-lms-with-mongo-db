@@ -6,7 +6,7 @@ import Link from "next/link";
 import JobDetailModal from "@/app/components/job-detail-modal";
 import { useSession } from "next-auth/react";
 import TalentSidebar from "@/app/components/talent-sidebar";
-import { MIN_PROFILE_COMPLETION } from "@/lib/profile-completion";
+import { MIN_PROFILE_COMPLETION } from "@/lib/constants";
 
 type Job = {
   _id: string;
