@@ -1,17 +1,29 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getDB } from "@/lib/mock-db"
+import { getDB } from "@/lib/db"
+import { enrollmentCreateSchema } from "@/lib/validation"
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const userId = searchParams.get("userId")
-
-    if (!userId) {
-      return NextResponse.json({ error: "User ID is required" }, { status: 400 })
-    }
+    const courseId = searchParams.get("courseId")
+    const courseIds = searchParams.get("courseIds")
+    const all = searchParams.get("all") === "true"
 
     const db = getDB()
-    const enrollments = await db.getEnrollmentsByUserId(userId)
+    let enrollments = []
+
+    if (all) {
+      enrollments = await db.getAllEnrollments()
+    } else if (userId) {
+      enrollments = await db.getEnrollmentsByUserId(userId)
+    } else if (courseId || courseIds) {
+      const ids = courseIds ? courseIds.split(",") : [courseId as string]
+      const allEnrollments = await db.getAllEnrollments()
+      enrollments = allEnrollments.filter((e) => ids.includes(e.courseId))
+    } else {
+      return NextResponse.json({ error: "Query parameters are required" }, { status: 400 })
+    }
 
     // Add course details to each enrollment
     const enrichedEnrollments = await Promise.all(
@@ -34,11 +46,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, courseId } = body
-
-    if (!userId || !courseId) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
-    }
+    const { userId, courseId } = enrollmentCreateSchema.parse(body)
 
     const db = getDB()
     // Check if already enrolled

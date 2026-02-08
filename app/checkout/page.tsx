@@ -6,16 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useAuthStore, useCartStore } from "@/lib/store"
+import { useAuthStore, useCartStore, usePreferencesStore } from "@/lib/store"
 import { formatCurrency } from "@/lib/utils/format"
 import { CreditCard, Lock } from "lucide-react"
-import { mockDB } from "@/lib/mock-db"
-import { paystackService } from "@/lib/paystack"
 
 export default function CheckoutPage() {
   const router = useRouter()
   const { user } = useAuthStore()
   const { items, clearCart } = useCartStore()
+  const { currency } = usePreferencesStore()
   const [loading, setLoading] = useState(false)
   const [billingInfo, setBillingInfo] = useState({
     name: user?.name || "",
@@ -32,8 +31,8 @@ export default function CheckoutPage() {
     }
   }, [user, items, router])
 
-  const courses = items.map((item) => mockDB.courses.find((c) => c.id === item.courseId)).filter(Boolean)
-  const subtotal = courses.reduce((sum, course) => sum + (course?.price || 0), 0)
+  const courses = items.map((item) => item.course).filter(Boolean)
+  const subtotal = courses.reduce((sum, course) => sum + course.price[currency], 0)
   const discount = 0
   const total = subtotal - discount
 
@@ -44,33 +43,33 @@ export default function CheckoutPage() {
 
     try {
       // Initialize payment
-      const payment = await paystackService.initializePayment({
-        userId: user.id,
-        courseIds: items.map((item) => item.courseId),
-        amount: total,
-        email: billingInfo.email,
+      const response = await fetch("/api/payments/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          courseIds: items.map((item) => item.courseId),
+          amount: total,
+          email: billingInfo.email,
+          currency,
+        }),
       })
+      const paymentResult = await response.json()
+
+      if (!response.ok) {
+        throw new Error(paymentResult.error || "Payment initialization failed")
+      }
 
       // In a real app, redirect to Paystack payment page
       // For now, simulate payment completion after 2 seconds
       setTimeout(async () => {
         // Verify payment (simulate success)
-        const verified = await paystackService.verifyPayment(payment.reference)
+        const verifyRes = await fetch(`/api/payments/verify?reference=${paymentResult.payment.reference}`)
+        const verified = await verifyRes.json()
 
-        if (verified) {
-          // Create enrollments
-          items.forEach((item) => {
-            mockDB.createEnrollment({
-              userId: user.id,
-              courseId: item.courseId,
-              progress: 0,
-              enrolledAt: new Date().toISOString(),
-              lastAccessedAt: new Date().toISOString(),
-            })
-          })
-
+        if (verified?.verified) {
           clearCart()
-          router.push(`/checkout/success?reference=${payment.reference}`)
+          router.push(`/checkout/success?reference=${paymentResult.payment.reference}`)
         } else {
           router.push("/checkout/failed")
         }
@@ -163,7 +162,7 @@ export default function CheckoutPage() {
                   {courses.map((course) => (
                     <div key={course?.id} className="flex justify-between text-sm">
                       <span className="line-clamp-1">{course?.title}</span>
-                      <span className="font-medium">{formatCurrency(course?.price || 0)}</span>
+                      <span className="font-medium">{formatCurrency(course.price[currency], currency)}</span>
                     </div>
                   ))}
                 </div>
@@ -171,15 +170,15 @@ export default function CheckoutPage() {
                 <div className="border-t pt-3 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span>{formatCurrency(subtotal)}</span>
+                    <span>{formatCurrency(subtotal, currency)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Discount</span>
-                    <span className="text-green-600">-{formatCurrency(discount)}</span>
+                    <span className="text-green-600">-{formatCurrency(discount, currency)}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t pt-2">
                     <span>Total</span>
-                    <span>{formatCurrency(total)}</span>
+                    <span>{formatCurrency(total, currency)}</span>
                   </div>
                 </div>
 

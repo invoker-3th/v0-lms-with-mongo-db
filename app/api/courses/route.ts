@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getDB } from "@/lib/mock-db"
+import { getDB } from "@/lib/db"
+import { courseCreateSchema } from "@/lib/validation"
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,9 +8,17 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get("category")
     const level = searchParams.get("level")
     const search = searchParams.get("search")
+    const instructorId = searchParams.get("instructorId")
+    const includeDrafts = searchParams.get("includeDrafts") === "true"
 
     const db = getDB()
-    let courses = await db.getAllCourses()
+    let courses = instructorId
+      ? await db.getCoursesByInstructor(instructorId)
+      : await db.getAllCourses()
+
+    if (!includeDrafts) {
+      courses = courses.filter((c) => c.published)
+    }
 
     if (category && category !== "all") {
       courses = courses.filter((c) => c.category.toLowerCase() === category.toLowerCase())
@@ -38,36 +47,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const {
-      title,
-      description,
-      category,
-      level,
-      price,
-      thumbnail,
-      instructorId,
-      published = false,
-      modules = [],
-      totalDuration = 0,
-      enrollmentCount = 0,
-      rating = 0,
-    } = body
-
-    // Validate required fields
-    if (!title || !description || !category || !level || !price || !instructorId) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      )
-    }
-
-    // Validate price structure
-    if (!price.NGN || !price.USD || !price.GBP) {
-      return NextResponse.json(
-        { error: "Price must include NGN, USD, and GBP" },
-        { status: 400 }
-      )
-    }
+    const validated = courseCreateSchema.parse(body)
 
     const db = getDB()
 
@@ -88,19 +68,14 @@ export async function POST(request: NextRequest) {
 
     // Create course
     const course = await db.createCourse({
-      title,
+      ...validated,
       slug,
-      description,
-      category,
-      level,
-      instructorId,
-      price,
-      thumbnail,
-      published,
-      modules,
-      totalDuration,
-      enrollmentCount,
-      rating,
+      thumbnail: validated.thumbnail || "/placeholder.jpg",
+      published: validated.published ?? false,
+      modules: validated.modules ?? [],
+      totalDuration: validated.totalDuration ?? 0,
+      enrollmentCount: validated.enrollmentCount ?? 0,
+      rating: validated.rating ?? 0,
     })
 
     return NextResponse.json({ course }, { status: 201 })

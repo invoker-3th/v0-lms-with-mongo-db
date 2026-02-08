@@ -5,20 +5,46 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CreditCard } from "lucide-react"
 import { useAuthStore } from "@/lib/store"
-import { db } from "@/lib/mock-db"
 import type { Payment } from "@/lib/types"
 import { formatCurrency, formatDate } from "@/lib/utils/format"
 
 export default function PaymentsPage() {
   const { user } = useAuthStore()
   const [payments, setPayments] = useState<Payment[]>([])
+  const [courseTitles, setCourseTitles] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    if (user) {
-      const userPayments = db.payments.filter((p) => p.userId === user.id)
-      setPayments(userPayments)
+    if (!user) return
+    const loadPayments = async () => {
+      try {
+        const res = await fetch(`/api/payments?userId=${user.id}`)
+        const data = await res.json()
+        setPayments(data.payments || [])
+      } catch (error) {
+        console.error("Failed to load payments:", error)
+        setPayments([])
+      }
     }
+    loadPayments()
   }, [user])
+
+  useEffect(() => {
+    if (payments.length === 0) return
+    const loadCourses = async () => {
+      try {
+        const res = await fetch("/api/courses?includeDrafts=true")
+        const data = await res.json()
+        const map: Record<string, string> = {}
+        for (const course of data.courses || []) {
+          map[course.id] = course.title
+        }
+        setCourseTitles(map)
+      } catch (error) {
+        console.error("Failed to load courses:", error)
+      }
+    }
+    loadCourses()
+  }, [payments.length])
 
   return (
     <div className="p-8">
@@ -30,13 +56,13 @@ export default function PaymentsPage() {
       {payments.length > 0 ? (
         <div className="space-y-4">
           {payments.map((payment) => {
-            const course = db.courses.find((c) => c.id === payment.courseId)
+            const courseTitle = courseTitles[payment.courseId] || payment.courseId
             return (
               <Card key={payment.id}>
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-semibold mb-1">{course?.title}</h3>
+                      <h3 className="font-semibold mb-1">{courseTitle}</h3>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                         <span>{formatDate(payment.createdAt)}</span>
                         <span>•</span>

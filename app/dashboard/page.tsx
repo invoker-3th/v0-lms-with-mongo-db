@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { BookOpen, Award, Clock, TrendingUp } from "lucide-react"
 import { useAuthStore } from "@/lib/store"
-import { db } from "@/lib/mock-db"
 import type { Enrollment, Course } from "@/lib/types"
 import Link from "next/link"
 import { formatDuration } from "@/lib/utils/format"
@@ -22,26 +21,33 @@ export default function DashboardPage() {
   })
 
   useEffect(() => {
-    if (user) {
-      const userEnrollments = db.enrollments.filter((e) => e.userId === user.id)
-      const enrichedEnrollments = userEnrollments.map((enrollment) => ({
-        ...enrollment,
-        course: db.courses.find((c) => c.id === enrollment.courseId),
-      }))
+    if (!user) return
+    const loadEnrollments = async () => {
+      try {
+        const res = await fetch(`/api/enrollments?userId=${user.id}`)
+        const data = await res.json()
+        const enriched = data.enrollments || []
+        setEnrollments(enriched)
 
-      setEnrollments(enrichedEnrollments)
+        const completed = enriched.filter((e: Enrollment) => e.status === "completed").length
+        const inProgress = enriched.filter((e: Enrollment) => e.status === "active").length
+        const totalMinutes = enriched.reduce((sum: number, e: Enrollment & { course?: Course }) => {
+          return sum + (e.course?.totalDuration || 0)
+        }, 0)
 
-      const completed = userEnrollments.filter((e) => e.status === "completed").length
-      const inProgress = userEnrollments.filter((e) => e.status === "active").length
-      const totalMinutes = enrichedEnrollments.reduce((sum, e) => sum + (e.course?.totalDuration || 0), 0)
-
-      setStats({
-        totalCourses: userEnrollments.length,
-        inProgress,
-        completed,
-        totalHours: Math.round(totalMinutes / 60),
-      })
+        setStats({
+          totalCourses: enriched.length,
+          inProgress,
+          completed,
+          totalHours: Math.round(totalMinutes / 60),
+        })
+      } catch (error) {
+        console.error("Failed to load enrollments:", error)
+        setEnrollments([])
+      }
     }
+
+    loadEnrollments()
   }, [user])
 
   const statCards = [

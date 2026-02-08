@@ -1,5 +1,5 @@
 // Authentication utilities with bcrypt and JWT
-import { getDB } from "./mock-db"
+import { getDB } from "./db"
 import type { User } from "./types"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"

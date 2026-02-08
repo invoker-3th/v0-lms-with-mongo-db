@@ -7,7 +7,6 @@ import Link from "next/link"
 import { ArrowRight, BookOpen, Users, Award, Star, Clock, TrendingUp } from "lucide-react"
 import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
-import { db } from "@/lib/mock-db"
 import type { Course } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils/format"
 import { usePreferencesStore } from "@/lib/store"
@@ -18,8 +17,14 @@ export default function HomePage() {
 
   useEffect(() => {
     const loadCourses = async () => {
-      const courses = await db.getAllCourses()
-      setFeaturedCourses(courses.slice(0, 3))
+      try {
+        const res = await fetch("/api/courses")
+        const data = await res.json()
+        setFeaturedCourses((data.courses || []).slice(0, 3))
+      } catch (error) {
+        console.error("Failed to load courses:", error)
+        setFeaturedCourses([])
+      }
     }
     loadCourses()
   }, [])

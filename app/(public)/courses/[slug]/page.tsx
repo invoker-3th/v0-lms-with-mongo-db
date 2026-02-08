@@ -20,7 +20,6 @@ import {
   ClipboardList,
   ShoppingCart,
 } from "lucide-react"
-import { db } from "@/lib/mock-db"
 import type { Course, User as UserType } from "@/lib/types"
 import { formatCurrency, formatDuration } from "@/lib/utils/format"
 import { usePreferencesStore, useCartStore, useAuthStore } from "@/lib/store"
@@ -44,13 +43,23 @@ export default function CourseDetailPage() {
 
   useEffect(() => {
     const loadCourse = async () => {
-      const foundCourse = await db.getCourseBySlug(slug)
-      if (foundCourse) {
-        setCourse(foundCourse)
-        const foundInstructor = await db.findUserById(foundCourse.instructorId)
-        setInstructor(foundInstructor || null)
+      try {
+        const res = await fetch(`/api/courses/slug/${slug}`)
+        if (!res.ok) {
+          setCourse(null)
+          setInstructor(null)
+        } else {
+          const data = await res.json()
+          setCourse(data.course || null)
+          setInstructor(data.instructor || null)
+        }
+      } catch (error) {
+        console.error("Failed to load course:", error)
+        setCourse(null)
+        setInstructor(null)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     loadCourse()
   }, [slug])

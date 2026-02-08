@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Download, Calendar, TrendingUp, DollarSign } from "lucide-react"
-import { getDB } from "@/lib/mock-db"
 import type { Payment } from "@/lib/types"
 import Link from "next/link"
 
@@ -24,8 +23,9 @@ export default function ReportsPage() {
 
   const loadReports = async () => {
     try {
-      const db = getDB()
-      const allPayments = await db.getAllPayments()
+      const res = await fetch("/api/payments")
+      const data = await res.json()
+      const allPayments = data.payments || []
       
       const successfulPayments = allPayments.filter(
         (p) => p.status === "completed" || p.status === "success"

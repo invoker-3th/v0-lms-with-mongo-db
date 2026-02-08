@@ -1,11 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getDB } from "@/lib/mock-db"
+import { getDB } from "@/lib/db"
+import { enrollmentProgressSchema } from "@/lib/validation"
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params
     const body = await request.json()
-    const { progress, completedLessons } = body
+    const { progress, completedLessons } = enrollmentProgressSchema.parse(body)
 
     const db = getDB()
     const enrollment = await db.getEnrollmentById(id)

@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { paystackService } from "@/lib/paystack"
-import { getDB } from "@/lib/mock-db"
+import { getDB } from "@/lib/db"
 
 export async function GET(request: NextRequest) {
   try {

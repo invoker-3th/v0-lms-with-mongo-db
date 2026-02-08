@@ -1,16 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { paystackService } from "@/lib/paystack"
-import { getDB } from "@/lib/mock-db"
+import { getDB } from "@/lib/db"
+import { paymentInitializeSchema } from "@/lib/validation"
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, courseIds, amount, email, currency = "USD" } = body
-
-    // Validate request
-    if (!userId || !courseIds || !amount || !email) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
-    }
+    const validated = paymentInitializeSchema.parse(body)
+    const { userId, courseIds, amount, email } = validated
+    const currency = validated.currency || "USD"
 
     const db = getDB()
     // Check if user exists

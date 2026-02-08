@@ -26,12 +26,49 @@ export const contactSchema = z.object({
   message: z.string().min(10, "Message must be at least 10 characters"),
 })
 
+export const coursePriceSchema = z.object({
+  NGN: z.number().min(0, "NGN price must be positive"),
+  USD: z.number().min(0, "USD price must be positive"),
+  GBP: z.number().min(0, "GBP price must be positive"),
+})
+
 export const courseCreateSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
   description: z.string().min(20, "Description must be at least 20 characters"),
   category: z.enum(["development", "design", "business", "marketing", "photography", "music"]),
   level: z.enum(["beginner", "intermediate", "advanced"]),
-  priceUSD: z.number().min(0, "Price must be positive"),
+  price: coursePriceSchema,
+  thumbnail: z.string().optional(),
+  instructorId: z.string().min(1, "Instructor is required"),
+  published: z.boolean().optional(),
+  modules: z.array(z.any()).optional(),
+  totalDuration: z.number().optional(),
+  enrollmentCount: z.number().optional(),
+  rating: z.number().optional(),
+})
+
+export const courseUpdateSchema = courseCreateSchema.partial()
+
+export const enrollmentCreateSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
+  courseId: z.string().min(1, "Course ID is required"),
+})
+
+export const enrollmentProgressSchema = z.object({
+  progress: z.number().min(0).max(100),
+  completedLessons: z.array(z.string()).optional(),
+})
+
+export const paymentInitializeSchema = z.object({
+  userId: z.string().min(1),
+  courseIds: z.array(z.string()).min(1),
+  amount: z.number().min(1),
+  email: z.string().email(),
+  currency: z.enum(["NGN", "USD", "GBP"]).optional(),
+})
+
+export const paymentRefundSchema = z.object({
+  status: z.enum(["refunded"]),
 })
 
 export const profileUpdateSchema = z.object({

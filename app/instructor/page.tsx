@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { BookOpen, Users, TrendingUp, Award, Plus, Eye, Edit, BarChart3 } from "lucide-react"
 import { useAuthStore } from "@/lib/store"
-import { getDB } from "@/lib/mock-db"
 import type { Course, Enrollment } from "@/lib/types"
 import Link from "next/link"
 
@@ -31,42 +30,44 @@ export default function InstructorDashboard() {
 
   const loadInstructorData = async () => {
     try {
-      const db = getDB()
-      
-      // Get instructor's courses
-      const instructorCourses = await db.getCoursesByInstructor(user?.id || "")
+      const coursesRes = await fetch(`/api/courses?instructorId=${user?.id}&includeDrafts=true`)
+      const coursesData = await coursesRes.json()
+      const instructorCourses = coursesData.courses || []
       setCourses(instructorCourses)
 
-      // Get all enrollments
-      const allEnrollments = await db.getAllEnrollments()
-      const courseEnrollments = allEnrollments.filter((e) =>
-        instructorCourses.some((c) => c.id === e.courseId)
-      )
+      const courseIds = instructorCourses.map((c: Course) => c.id)
+      const courseIdQuery = courseIds.join(",")
 
-      const enrolledStudents = new Set(courseEnrollments.map((e) => e.userId)).size
+      const [enrollmentsRes, paymentsRes] = await Promise.all([
+        courseIds.length > 0 ? fetch(`/api/enrollments?courseIds=${courseIdQuery}`) : Promise.resolve(null),
+        courseIds.length > 0 ? fetch(`/api/payments?courseIds=${courseIdQuery}`) : Promise.resolve(null),
+      ])
 
-      // Calculate average rating
-      const coursesWithRatings = instructorCourses.filter((c) => c.rating > 0)
+      const enrollmentsData = enrollmentsRes ? await enrollmentsRes.json() : { enrollments: [] }
+      const paymentsData = paymentsRes ? await paymentsRes.json() : { payments: [] }
+
+      const courseEnrollments = enrollmentsData.enrollments || []
+      const enrolledStudents = new Set(courseEnrollments.map((e: Enrollment) => e.userId)).size
+
+      const coursesWithRatings = instructorCourses.filter((c: Course) => c.rating > 0)
       const avgRating =
         coursesWithRatings.length > 0
-          ? coursesWithRatings.reduce((sum, c) => sum + c.rating, 0) / coursesWithRatings.length
+          ? coursesWithRatings.reduce((sum: number, c: Course) => sum + c.rating, 0) /
+            coursesWithRatings.length
           : 0
 
-      // Calculate revenue (from payments for instructor's courses)
-      const allPayments = await db.getAllPayments()
-      const coursePayments = allPayments.filter((p) =>
-        instructorCourses.some((c) => c.id === p.courseId) && 
-        (p.status === "completed" || p.status === "success")
+      const coursePayments = (paymentsData.payments || []).filter(
+        (p: any) => p.status === "completed" || p.status === "success"
       )
-      const totalRevenue = coursePayments.reduce((sum, p) => {
+      const totalRevenue = coursePayments.reduce((sum: number, p: any) => {
         if (p.currency === "NGN") return sum + p.amount
-        if (p.currency === "USD") return sum + p.amount * 1250 // Approx conversion
+        if (p.currency === "USD") return sum + p.amount * 1250
         if (p.currency === "GBP") return sum + p.amount * 1580
         return sum
       }, 0)
 
-      const publishedCourses = instructorCourses.filter((c) => c.published).length
-      const draftCourses = instructorCourses.filter((c) => !c.published).length
+      const publishedCourses = instructorCourses.filter((c: Course) => c.published).length
+      const draftCourses = instructorCourses.filter((c: Course) => !c.published).length
 
       setStats({
         totalCourses: instructorCourses.length,

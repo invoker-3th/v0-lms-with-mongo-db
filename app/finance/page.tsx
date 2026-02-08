@@ -28,7 +28,6 @@ import {
   ArrowDownRight
 } from "lucide-react"
 import { useAuthStore } from "@/lib/store"
-import { getDB } from "@/lib/mock-db"
 import type { Payment } from "@/lib/types"
 import Link from "next/link"
 
@@ -61,8 +60,9 @@ export default function FinanceDashboard() {
 
   const loadPayments = async () => {
     try {
-      const db = getDB()
-      const allPayments = await db.getAllPayments()
+      const res = await fetch("/api/payments")
+      const data = await res.json()
+      const allPayments = data.payments || []
       setPayments(allPayments)
 
       // Calculate stats

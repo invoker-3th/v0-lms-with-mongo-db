@@ -15,7 +15,7 @@ export default function AdminCoursesPage() {
 
   useEffect(() => {
     const load = async () => {
-      const res = await fetch("/api/courses")
+      const res = await fetch("/api/courses?includeDrafts=true")
       const data = await res.json()
       setCourses(data.courses ?? [])
     }

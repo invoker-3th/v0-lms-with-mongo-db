@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 import { Search, Star, Clock, Users, Filter } from "lucide-react"
-import { db } from "@/lib/mock-db"
 import type { Course } from "@/lib/types"
 import { formatCurrency, formatDuration } from "@/lib/utils/format"
 import { usePreferencesStore, useCartStore, useAuthStore } from "@/lib/store"
@@ -30,9 +29,17 @@ export default function CoursesPage() {
 
   useEffect(() => {
     const loadCourses = async () => {
-      const allCourses = await db.getAllCourses()
-      setCourses(allCourses)
-      setFilteredCourses(allCourses)
+      try {
+        const res = await fetch("/api/courses")
+        const data = await res.json()
+        const allCourses = data.courses || []
+        setCourses(allCourses)
+        setFilteredCourses(allCourses)
+      } catch (error) {
+        console.error("Failed to load courses:", error)
+        setCourses([])
+        setFilteredCourses([])
+      }
     }
     loadCourses()
   }, [])

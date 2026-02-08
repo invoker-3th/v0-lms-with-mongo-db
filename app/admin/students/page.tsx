@@ -6,19 +6,47 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Search, Mail, BookOpen, Award, Ban, CheckCircle, Users } from "lucide-react"
-import { mockDB } from "@/lib/mock-db"
-import type { User } from "@/lib/types"
+import type { User, Enrollment, Course } from "@/lib/types"
 import { formatDate } from "@/lib/utils/format"
 
 export default function AdminStudentsPage() {
   const [students, setStudents] = useState<User[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredStudents, setFilteredStudents] = useState<User[]>([])
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([])
+  const [coursesById, setCoursesById] = useState<Record<string, Course>>({})
 
   useEffect(() => {
-    const allStudents = mockDB.users.filter((u) => u.role === "student")
-    setStudents(allStudents)
-    setFilteredStudents(allStudents)
+    const loadData = async () => {
+      try {
+        const [studentsRes, enrollmentsRes, coursesRes] = await Promise.all([
+          fetch("/api/users?role=student"),
+          fetch("/api/enrollments?all=true"),
+          fetch("/api/courses?includeDrafts=true"),
+        ])
+
+        const studentsData = await studentsRes.json()
+        const enrollmentsData = await enrollmentsRes.json()
+        const coursesData = await coursesRes.json()
+
+        const allStudents = studentsData.users || []
+        setStudents(allStudents)
+        setFilteredStudents(allStudents)
+        setEnrollments(enrollmentsData.enrollments || [])
+
+        const map: Record<string, Course> = {}
+        for (const course of coursesData.courses || []) {
+          map[course.id] = course
+        }
+        setCoursesById(map)
+      } catch (error) {
+        console.error("Failed to load students:", error)
+        setStudents([])
+        setFilteredStudents([])
+      }
+    }
+
+    loadData()
   }, [])
 
   useEffect(() => {
@@ -35,19 +63,30 @@ export default function AdminStudentsPage() {
   }, [searchQuery, students])
 
   const getStudentEnrollments = (userId: string) => {
-    return mockDB.enrollments.filter((e) => e.userId === userId)
+    return enrollments.filter((e) => e.userId === userId)
   }
 
   const getCompletedCourses = (userId: string) => {
-    return mockDB.enrollments.filter((e) => e.userId === userId && e.progress === 100).length
+    return enrollments.filter((e) => e.userId === userId && e.progress === 100).length
   }
 
-  const toggleStudentStatus = (userId: string) => {
+  const toggleStudentStatus = async (userId: string) => {
     const student = students.find((s) => s.id === userId)
     if (student) {
       const newStatus = student.status === "active" ? "suspended" : "active"
-      mockDB.updateUser(userId, { status: newStatus })
-      setStudents(students.map((s) => (s.id === userId ? { ...s, status: newStatus } : s)))
+      try {
+        const res = await fetch(`/api/users/${userId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        })
+        if (!res.ok) {
+          throw new Error("Failed to update user")
+        }
+        setStudents(students.map((s) => (s.id === userId ? { ...s, status: newStatus } : s)))
+      } catch (error) {
+        console.error("Failed to update student:", error)
+      }
     }
   }
 
@@ -87,7 +126,7 @@ export default function AdminStudentsPage() {
         </Card>
         <Card>
           <CardContent className="p-6">
-            <div className="text-2xl font-bold">{mockDB.enrollments.length}</div>
+            <div className="text-2xl font-bold">{enrollments.length}</div>
             <p className="text-sm text-muted-foreground">Total Enrollments</p>
           </CardContent>
         </Card>
@@ -182,7 +221,7 @@ export default function AdminStudentsPage() {
                     <p className="text-sm font-medium mb-2">Enrolled Courses:</p>
                     <div className="flex flex-wrap gap-2">
                       {enrollments.map((enrollment) => {
-                        const course = mockDB.courses.find((c) => c.id === enrollment.courseId)
+                        const course = coursesById[enrollment.courseId]
                         return course ? (
                           <Badge key={enrollment.id} variant="outline">
                             {course.title} ({enrollment.progress}%)

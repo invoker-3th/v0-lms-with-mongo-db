@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getDB } from "@/lib/mock-db"
+import { getDB } from "@/lib/db"
+import { courseUpdateSchema } from "@/lib/validation"
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -23,9 +24,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   try {
     const { id } = params
     const body = await request.json()
+    const validated = courseUpdateSchema.parse(body)
 
     const db = getDB()
-    const updated = await db.updateCourse(id, body)
+    const updated = await db.updateCourse(id, validated)
 
     if (!updated) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 })

@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, Download, ArrowRight } from "lucide-react"
-import { mockDB } from "@/lib/mock-db"
 import { formatCurrency, formatDate } from "@/lib/utils/format"
 import Link from "next/link"
 import type { Payment } from "@/lib/types"
@@ -15,6 +14,7 @@ export default function CheckoutSuccessPage() {
   const router = useRouter()
   const reference = searchParams.get("reference")
   const [payment, setPayment] = useState<Payment | null>(null)
+  const [courseTitle, setCourseTitle] = useState<string>("")
 
   useEffect(() => {
     if (!reference) {
@@ -22,17 +22,31 @@ export default function CheckoutSuccessPage() {
       return
     }
 
-    const foundPayment = mockDB.payments.find((p) => p.reference === reference)
-    if (foundPayment) {
-      setPayment(foundPayment)
+    const loadPayment = async () => {
+      try {
+        const res = await fetch(`/api/payments?reference=${reference}`)
+        const data = await res.json()
+        const foundPayment = data.payments?.[0] || null
+        setPayment(foundPayment)
+
+        if (foundPayment?.courseId) {
+          const courseRes = await fetch(`/api/courses/${foundPayment.courseId}`)
+          if (courseRes.ok) {
+            const courseData = await courseRes.json()
+            setCourseTitle(courseData.course?.title || foundPayment.courseId)
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load payment:", error)
+      }
     }
+
+    loadPayment()
   }, [reference, router])
 
   if (!payment) {
     return null
   }
-
-  const courses = payment.courseIds.map((id) => mockDB.courses.find((c) => c.id === id)).filter(Boolean)
 
   const downloadInvoice = () => {
     alert(`Invoice ${payment.reference} downloaded`)
@@ -60,7 +74,7 @@ export default function CheckoutSuccessPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Amount Paid</span>
-                <span className="font-semibold">{formatCurrency(payment.amount)}</span>
+                <span className="font-semibold">{formatCurrency(payment.amount, payment.currency)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Date</span>
@@ -77,16 +91,14 @@ export default function CheckoutSuccessPage() {
           <div className="mb-8 text-left">
             <h3 className="font-semibold mb-3">Enrolled Courses:</h3>
             <div className="space-y-2">
-              {courses.map((course) => (
-                <div key={course?.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <img
-                    src={course?.thumbnail || "/placeholder.svg"}
-                    alt={course?.title}
-                    className="w-16 h-12 object-cover rounded"
-                  />
-                  <span className="font-medium">{course?.title}</span>
-                </div>
-              ))}
+            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+              <img
+                src="/placeholder.svg"
+                alt={courseTitle || "Course"}
+                className="w-16 h-12 object-cover rounded"
+              />
+              <span className="font-medium">{courseTitle || payment.courseId}</span>
+            </div>
             </div>
           </div>
 

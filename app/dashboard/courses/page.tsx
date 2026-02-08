@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { BookOpen, Play } from "lucide-react"
 import { useAuthStore } from "@/lib/store"
-import { db } from "@/lib/mock-db"
 import type { Enrollment, Course } from "@/lib/types"
 import Link from "next/link"
 import { formatDuration } from "@/lib/utils/format"
@@ -16,14 +15,18 @@ export default function MyCoursesPage() {
   const [enrollments, setEnrollments] = useState<(Enrollment & { course: Course | undefined })[]>([])
 
   useEffect(() => {
-    if (user) {
-      const userEnrollments = db.enrollments.filter((e) => e.userId === user.id)
-      const enrichedEnrollments = userEnrollments.map((enrollment) => ({
-        ...enrollment,
-        course: db.courses.find((c) => c.id === enrollment.courseId),
-      }))
-      setEnrollments(enrichedEnrollments)
+    if (!user) return
+    const loadEnrollments = async () => {
+      try {
+        const res = await fetch(`/api/enrollments?userId=${user.id}`)
+        const data = await res.json()
+        setEnrollments(data.enrollments || [])
+      } catch (error) {
+        console.error("Failed to load enrollments:", error)
+        setEnrollments([])
+      }
     }
+    loadEnrollments()
   }, [user])
 
   return (

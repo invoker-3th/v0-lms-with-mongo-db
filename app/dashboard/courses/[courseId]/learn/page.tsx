@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { ChevronLeft, ChevronRight, CheckCircle, PlayCircle } from "lucide-react"
 import { useAuthStore } from "@/lib/store"
-import { db } from "@/lib/mock-db"
 import type { Course, Enrollment, Lesson } from "@/lib/types"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
@@ -26,24 +25,46 @@ export default function LearnPage() {
       return
     }
 
-    const foundCourse = db.courses.find((c) => c.id === courseId)
-    const foundEnrollment = db.enrollments.find((e) => e.userId === user.id && e.courseId === courseId)
+    const loadData = async () => {
+      try {
+        const [courseRes, enrollmentsRes] = await Promise.all([
+          fetch(`/api/courses/${courseId}`),
+          fetch(`/api/enrollments?userId=${user.id}`),
+        ])
 
-    if (!foundCourse || !foundEnrollment) {
-      router.push("/dashboard/courses")
-      return
-    }
+        if (!courseRes.ok || !enrollmentsRes.ok) {
+          router.push("/dashboard/courses")
+          return
+        }
 
-    setCourse(foundCourse)
-    setEnrollment(foundEnrollment)
+        const courseData = await courseRes.json()
+        const enrollmentsData = await enrollmentsRes.json()
+        const foundCourse = courseData.course as Course
+        const foundEnrollment = (enrollmentsData.enrollments || []).find(
+          (e: Enrollment) => e.courseId === courseId
+        )
 
-    // Set current lesson
-    if (foundCourse.modules.length > 0) {
-      const firstModule = foundCourse.modules[0]
-      if (firstModule && firstModule.lessons.length > 0) {
-        setCurrentLesson(firstModule.lessons[0] as Lesson)
+        if (!foundCourse || !foundEnrollment) {
+          router.push("/dashboard/courses")
+          return
+        }
+
+        setCourse(foundCourse)
+        setEnrollment(foundEnrollment)
+
+        if (foundCourse.modules.length > 0) {
+          const firstModule = foundCourse.modules[0]
+          if (firstModule && firstModule.lessons.length > 0) {
+            setCurrentLesson(firstModule.lessons[0] as Lesson)
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load course data:", error)
+        router.push("/dashboard/courses")
       }
     }
+
+    loadData()
   }, [user, courseId, router])
 
   const markLessonComplete = () => {
@@ -56,10 +77,14 @@ export default function LearnPage() {
       const totalLessons = course?.modules.reduce((sum, m) => sum + m.lessons.length, 0) || 1
       const progress = Math.round((updatedLessons.length / totalLessons) * 100)
 
-      db.updateEnrollment(enrollment.id, {
-        completedLessons: updatedLessons,
-        progress,
-      })
+      fetch(`/api/enrollments/${enrollment.id}/progress`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          completedLessons: updatedLessons,
+          progress,
+        }),
+      }).catch((error) => console.error("Failed to update progress:", error))
 
       setEnrollment({ ...enrollment, completedLessons: updatedLessons, progress })
     }
