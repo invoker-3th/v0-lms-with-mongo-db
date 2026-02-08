@@ -22,7 +22,7 @@ EMAIL_SERVER_HOST=smtp.gmail.com
 EMAIL_SERVER_PORT=587
 EMAIL_SERVER_USER=your-email@gmail.com
 EMAIL_SERVER_PASSWORD=your-app-password
-EMAIL_FROM=noreply@hubmovies.com
+EMAIL_FROM=noreply@hubmovies-cd.com
 
 # Cloudinary (for media uploads)
 # Get these from: https://cloudinary.com/console

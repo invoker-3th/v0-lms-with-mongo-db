@@ -20,7 +20,7 @@ export const authOptions: NextAuthConfig = {
           pass: process.env.EMAIL_SERVER_PASSWORD,
         },
       },
-      from: process.env.EMAIL_FROM || "noreply@hubmovies.com",
+      from: process.env.EMAIL_FROM || "noreply@hubmovies-cd.com",
     }),
     CredentialsProvider({
       name: "Email",
@@ -141,4 +141,3 @@ export const { GET, POST } = handlers;
 
 // Export auth function for use in server components and API routes
 export { auth };
-

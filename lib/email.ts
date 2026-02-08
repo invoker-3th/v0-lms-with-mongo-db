@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@hubmovies.com";
+const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@hubmovies-cd.com";
 
 interface EmailOptions {
   to: string;
@@ -85,7 +85,7 @@ export async function sendApplicationStatusEmail(
             <p>Your application for <strong>${jobTitle}</strong> has been updated.</p>
             <div class="status-badge ${status}">${statusText}</div>
             <p>You can view your application and any messages from the casting director in your dashboard.</p>
-            <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://hubmovies.com"}/talent/dashboard" class="button">View Dashboard</a>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://hubmovies-cd.com"}/talent/dashboard" class="button">View Dashboard</a>
           </div>
           <div class="footer">
             <p>This is an automated notification from HubMovies Cast.</p>
@@ -187,7 +187,7 @@ export async function sendMessageNotificationEmail(
             <h2>New Message</h2>
             <p>You have received a new message${directorText} regarding your application for <strong>${jobTitle}</strong>.</p>
             <p>Log in to your dashboard to view the message and respond.</p>
-            <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://hubmovies.com"}/talent/dashboard" class="button">View Message</a>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://hubmovies-cd.com"}/talent/dashboard" class="button">View Message</a>
           </div>
           <div class="footer">
             <p>This is an automated notification from HubMovies Cast.</p>

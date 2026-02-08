@@ -30,12 +30,12 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ## 4) Verify Your Domain (Recommended for Production)
 1. In Resend Dashboard → **Domains** → **Add Domain**
-2. Enter your domain (e.g., `hubmovies.com`)
+2. Enter your domain (e.g., `hubmovies-cd.com`)
 3. Resend will provide SPF and DKIM records to add to your DNS
 4. Add the DNS records in your domain registrar
 5. Wait 5-30 minutes for verification (check dashboard for `verified` status)
 
-**Note:** Use a subdomain like `noreply@updates.hubmovies.com` for better deliverability.
+**Note:** Use a subdomain like `noreply@updates.hubmovies-cd.com` for better deliverability.
 
 ## 5) How It Works in This Project
 The email system is centralized in `lib/email.ts` with the following functions:
@@ -58,7 +58,7 @@ All functions return a boolean (true = success, false = failure).
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@hubmovies.com";
+const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@hubmovies-cd.com";
 
 export async function sendEmail({ to, subject, html }: EmailOptions): Promise<boolean> {
   if (!process.env.RESEND_API_KEY) {
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
 
 ## 10) Best Practices
 
-- ✅ **Use subdomains** for email (e.g., `noreply@updates.hubmovies.com`)
+- ✅ **Use subdomains** for email (e.g., `noreply@updates.hubmovies-cd.com`)
 - ✅ **Verify domains** for production (improves deliverability)
 - ✅ **Never commit API keys** - use `.env.local` (gitignored)
 - ✅ **Check Resend Dashboard** for email logs and delivery status

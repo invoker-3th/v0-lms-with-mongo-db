@@ -272,7 +272,7 @@ export default function PaymentPage() {
 
         <div className="mt-6 text-center">
           <p className="text-xs text-[var(--text-secondary)] mb-2">
-            Questions? <a href="mailto:support@hubmovies.com" className="text-[var(--accent-gold)] hover:underline">Contact support</a>
+            Questions? <a href="mailto:support@hubmovies-cd.com" className="text-[var(--accent-gold)] hover:underline">Contact support</a>
           </p>
         </div>
       </motion.div>
