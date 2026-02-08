@@ -184,7 +184,7 @@ export default function JobsListingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] relative flex">
+    <div className="min-h-screen bg-[var(--bg-main)] relative">
       {/* Noise overlay */}
       <div
         className="fixed inset-0 opacity-[0.015] pointer-events-none z-0"
@@ -199,7 +199,7 @@ export default function JobsListingPage() {
 
       <TalentSidebar />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pb-24 sm:pb-12 w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pb-24 sm:pb-12 w-full md:pl-56">
         {/* Page Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

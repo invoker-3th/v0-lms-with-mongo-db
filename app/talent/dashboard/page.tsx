@@ -235,7 +235,7 @@ export default function TalentDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] relative flex">
+    <div className="min-h-screen bg-[var(--bg-main)] relative">
       {/* Noise overlay */}
       <div
         className="fixed inset-0 opacity-[0.015] pointer-events-none z-0"
@@ -251,7 +251,7 @@ export default function TalentDashboard() {
       <TalentSidebar />
 
       {/* Dashboard Container */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 pt-12 pb-24 sm:px-6 sm:pt-20 sm:pb-12 w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 pt-12 pb-24 sm:px-6 sm:pt-20 sm:pb-12 w-full md:pl-56">
         {/* Dashboard Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

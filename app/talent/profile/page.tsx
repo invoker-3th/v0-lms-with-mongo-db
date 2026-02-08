@@ -363,7 +363,7 @@ export default function TalentProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] relative flex">
+    <div className="min-h-screen bg-[var(--bg-main)] relative">
       {/* Noise overlay */}
       <div
         className="fixed inset-0 opacity-[0.015] pointer-events-none z-0"
@@ -379,7 +379,7 @@ export default function TalentProfilePage() {
       <TalentSidebar />
 
       {/* Dashboard Container */}
-      <div className="relative z-10 max-w-4xl mx-auto px-6 pt-12 sm:pt-20 pb-24 sm:pb-12 w-full">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 pt-12 sm:pt-20 pb-24 sm:pb-12 w-full md:pl-56">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

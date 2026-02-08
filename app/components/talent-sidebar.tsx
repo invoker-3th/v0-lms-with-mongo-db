@@ -86,7 +86,7 @@ export default function TalentSidebar() {
 
   return (
     <>
-      <aside className="hidden md:flex flex-col w-56 bg-black/30 border-r border-white/10 min-h-screen pt-6 md:pt-8 px-2 md:px-4">
+      <aside className="hidden md:flex flex-col w-56 bg-black/30 border-r border-white/10 h-screen fixed top-0 left-0 pt-6 md:pt-8 px-2 md:px-4 z-30">
         <div className="flex items-center gap-3 mb-4 md:mb-6">
         <div className="relative">
           {user?.image ? (

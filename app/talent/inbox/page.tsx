@@ -44,7 +44,7 @@ export default function TalentInboxPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] relative flex">
+    <div className="min-h-screen bg-[var(--bg-main)] relative">
       {/* Noise overlay */}
       <div
         className="fixed inset-0 opacity-[0.015] pointer-events-none z-0"
@@ -56,7 +56,7 @@ export default function TalentInboxPage() {
 
       <TalentSidebar />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 pt-12 pb-24 sm:px-6 sm:pt-20 sm:pb-12 w-full">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 pt-12 pb-24 sm:px-6 sm:pt-20 sm:pb-12 w-full md:pl-56">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
