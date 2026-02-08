@@ -35,8 +35,51 @@ export const authOptions: NextAuthConfig = {
             return null;
           }
 
-          const email = credentials.email as string;
+          const email = (credentials.email as string).toLowerCase().trim();
           const password = credentials.password as string;
+
+          const adminList =
+            process.env.ADMIN_ACCOUNTS?.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean) || [];
+          const adminPassword = process.env.ADMIN_PASSWORD || "";
+
+          // Admin shortcut: allow env-configured admins with shared password
+          if (adminList.includes(email)) {
+            if (!adminPassword || password !== adminPassword) {
+              console.error("âŒ Invalid admin password", { email });
+              return null;
+            }
+
+            console.log("ðŸ” Attempting to connect to MongoDB for admin login...", { email });
+            await connectDB();
+            console.log("âœ… MongoDB connected");
+
+            let adminUser = await User.findOne({ email });
+            if (!adminUser) {
+              const passwordHash = await bcrypt.hash(adminPassword, 10);
+              adminUser = await User.create({
+                email,
+                passwordHash,
+                role: "ADMIN",
+                emailVerified: new Date(),
+              });
+            } else if (adminUser.role !== "ADMIN" || !adminUser.passwordHash) {
+              adminUser.role = "ADMIN";
+              adminUser.passwordHash = await bcrypt.hash(adminPassword, 10);
+              adminUser.emailVerified = adminUser.emailVerified || new Date();
+              await adminUser.save();
+            }
+
+            return {
+              id: adminUser._id.toString(),
+              email: adminUser.email!,
+              name: adminUser.name,
+              image: adminUser.image,
+              role: "ADMIN",
+              emailVerified: !!adminUser.emailVerified,
+              profileCompletion: adminUser.profileCompletion || 0,
+              paymentConfirmed: !!adminUser.paymentConfirmed,
+            };
+          }
 
           console.log("🔐 Attempting to connect to MongoDB...", { email });
           await connectDB();
