@@ -56,6 +56,8 @@ export async function GET() {
         cv: user.cv || null,
         profileCompletion: completion.score,
         verificationTier: tier,
+        paymentConfirmed: !!user.paymentConfirmed,
+        paymentPending: !!(!user.paymentConfirmed && (user.paymentMethod || user.paymentReference)),
       },
     });
   } catch (error) {
@@ -163,6 +165,8 @@ export async function PATCH(req: Request) {
         cv: user.cv || null,
         profileCompletion: completion.score,
         verificationTier: tier,
+        paymentConfirmed: !!user.paymentConfirmed,
+        paymentPending: !!(!user.paymentConfirmed && (user.paymentMethod || user.paymentReference)),
       },
     });
   } catch (error) {

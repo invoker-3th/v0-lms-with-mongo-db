@@ -87,8 +87,12 @@ export default function Header() {
           ) : (
             <>
               <Link href="/" className="text-[var(--text-secondary)] hover:text-white transition">Home</Link>
-              <Link href={user?.role === "TALENT" ? "/talent/profile" : user?.role === "DIRECTOR" ? "/director/dashboard" : "/admin/jobs"} className="text-[var(--text-secondary)] hover:text-white transition">Profile</Link>
-              <Link href={user?.role === "TALENT" ? "/talent/dashboard" : user?.role === "DIRECTOR" ? "/director/dashboard" : "/admin/jobs"} className="text-[var(--text-secondary)] hover:text-white transition">Dashboard</Link>
+              {user?.role !== "TALENT" && (
+                <>
+                  <Link href={user?.role === "DIRECTOR" ? "/director/dashboard" : "/admin/jobs"} className="text-[var(--text-secondary)] hover:text-white transition">Profile</Link>
+                  <Link href={user?.role === "DIRECTOR" ? "/director/dashboard" : "/admin/jobs"} className="text-[var(--text-secondary)] hover:text-white transition">Dashboard</Link>
+                </>
+              )}
             </>
           )}
         </nav>

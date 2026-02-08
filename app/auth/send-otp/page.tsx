@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function SendOtpPage() {
   const [email, setEmail] = useState("");
@@ -11,6 +11,15 @@ export default function SendOtpPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const lockedEmail = searchParams.get("locked") === "1";
+
+  useEffect(() => {
+    const queryEmail = (searchParams.get("email") || "").trim();
+    if (queryEmail && queryEmail.includes("@")) {
+      setEmail(queryEmail);
+    }
+  }, [searchParams]);
 
   const sendOtp = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -84,7 +93,9 @@ export default function SendOtpPage() {
     <div className="min-h-screen flex items-center justify-center bg-[var(--bg-main)] p-6">
       <div className="w-full max-w-md bg-white/5 border border-white/10 rounded p-6">
         <h1 className="text-2xl text-white mb-3">Verify your email (OTP)</h1>
-        <p className="text-[var(--text-secondary)] text-sm mb-4">Enter your email to receive a 6-digit OTP.</p>
+        <p className="text-[var(--text-secondary)] text-sm mb-4">
+          Enter your email to receive a 6-digit OTP.
+        </p>
 
         {error && <div className="mb-3 text-sm text-red-400">{error}</div>}
 
@@ -96,7 +107,13 @@ export default function SendOtpPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
+              disabled={lockedEmail}
             />
+            {lockedEmail && (
+              <p className="text-xs text-[var(--text-secondary)]">
+                Using the email you signed up with.
+              </p>
+            )}
             <div className="flex gap-2">
               <button type="submit" className="px-4 py-2 bg-[var(--accent-gold)] text-black rounded" disabled={loading}>
                 Send OTP
@@ -124,8 +141,12 @@ export default function SendOtpPage() {
               <button type="submit" className="px-4 py-2 bg-[var(--accent-gold)] text-black rounded" disabled={loading}>
                 Verify OTP
               </button>
-              <button type="button" onClick={() => setStage("enter")} className="px-4 py-2 border rounded text-white">
-                Resend / Change Email
+              <button
+                type="button"
+                onClick={() => setStage("enter")}
+                className="px-4 py-2 border rounded text-white"
+              >
+                {lockedEmail ? "Resend OTP" : "Resend / Change Email"}
               </button>
             </div>
             {emailSent === false && (

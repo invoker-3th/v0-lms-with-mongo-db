@@ -67,6 +67,7 @@ export const authOptions: NextAuthConfig = {
             role: user.role,
             emailVerified: !!user.emailVerified,
             profileCompletion: user.profileCompletion || 0,
+            paymentConfirmed: !!user.paymentConfirmed,
           };
         } catch (error) {
           console.error("❌ Authorize error:", { error: error instanceof Error ? error.message : String(error) });
@@ -93,6 +94,7 @@ export const authOptions: NextAuthConfig = {
         token.emailVerified = (user as any).emailVerified || false;
         token.name = (user as any).name;
         token.profileCompletion = (user as any).profileCompletion || 0;
+        token.paymentConfirmed = (user as any).paymentConfirmed || false;
       } else if (token.id) {
         // Refresh user data from database on each request
         await connectDB();
@@ -102,6 +104,7 @@ export const authOptions: NextAuthConfig = {
           token.emailVerified = !!dbUser.emailVerified;
           token.name = dbUser.name;
           token.profileCompletion = dbUser.profileCompletion || 0;
+          token.paymentConfirmed = !!dbUser.paymentConfirmed;
         }
       }
       
@@ -115,6 +118,7 @@ export const authOptions: NextAuthConfig = {
         (session.user as any).emailVerified = token.emailVerified as boolean;
         (session.user as any).name = token.name as string;
         (session.user as any).profileCompletion = token.profileCompletion as number;
+        (session.user as any).paymentConfirmed = token.paymentConfirmed as boolean;
       }
       return session;
     },

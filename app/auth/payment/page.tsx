@@ -37,6 +37,11 @@ export default function PaymentPage() {
       return;
     }
 
+    if ((user?.profileCompletion ?? 0) < 70) {
+      router.push("/talent/profile");
+      return;
+    }
+
     fetchPaymentSettings();
   }, [status, user, router]);
 

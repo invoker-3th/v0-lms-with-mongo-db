@@ -69,7 +69,8 @@ function SignupContent() {
         }
         // Redirect to OTP entry page after a short delay
         setTimeout(() => {
-          router.push("/auth/send-otp");
+          const nextUrl = `/auth/send-otp?email=${encodeURIComponent(email)}&locked=1`;
+          router.push(nextUrl);
         }, 1000);
       } else {
         console.error("❌ Signup failed", { status: res.status, error: data.error, email });
@@ -282,4 +283,3 @@ export default function SignupPage() {
     </Suspense>
   );
 }
-

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ApplicationDetailModal from "./components/application-detail-modal";
 import MessageThreadModal from "./components/message-thread-modal";
+import TalentSidebar from "@/app/components/talent-sidebar";
 
 function ProfileCompletionCard() {
   const [completion, setCompletion] = useState<{
@@ -135,8 +136,15 @@ export default function TalentDashboard() {
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [showMessages, setShowMessages] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [access, setAccess] = useState<{ paymentConfirmed: boolean; profileCompletion: number; loading: boolean }>({
+    paymentConfirmed: false,
+    profileCompletion: 0,
+    loading: true,
+  });
   
   const emailVerified = session?.user ? ((session.user as any)?.emailVerified ?? false) : false;
+  const paymentConfirmed = session?.user ? ((session.user as any)?.paymentConfirmed ?? false) : false;
+  const sessionCompletion = session?.user ? ((session.user as any)?.profileCompletion ?? 0) : 0;
 
   // Fetch applications for logged-in talent
   useEffect(() => {
@@ -164,6 +172,49 @@ export default function TalentDashboard() {
     fetchApplications();
   }, []);
 
+  useEffect(() => {
+    async function fetchAccess() {
+      try {
+        const res = await fetch("/api/talent/profile");
+        if (res.ok) {
+          const data = await res.json();
+          setAccess({
+            paymentConfirmed: !!data?.profile?.paymentConfirmed,
+            profileCompletion: data?.profile?.profileCompletion ?? 0,
+            loading: false,
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("Failed to fetch access info:", error);
+      }
+      setAccess({
+        paymentConfirmed,
+        profileCompletion: sessionCompletion,
+        loading: false,
+      });
+    }
+
+    if (session?.user) {
+      fetchAccess();
+    } else {
+      setAccess((prev) => ({ ...prev, loading: false }));
+    }
+  }, [session?.user, paymentConfirmed, sessionCompletion]);
+
+  const handleBrowseJobs = () => {
+    if (access.loading) return;
+    if (access.profileCompletion < 70) {
+      router.push("/talent/profile");
+      return;
+    }
+    if (!access.paymentConfirmed) {
+      window.location.href = "mailto:creativeartistagencyn@gmail.com?subject=Payment%20Confirmation";
+      return;
+    }
+    router.push("/jobs");
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "shortlisted":
@@ -184,7 +235,7 @@ export default function TalentDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] relative">
+    <div className="min-h-screen bg-[var(--bg-main)] relative flex">
       {/* Noise overlay */}
       <div
         className="fixed inset-0 opacity-[0.015] pointer-events-none z-0"
@@ -197,8 +248,10 @@ export default function TalentDashboard() {
       {/* Fixed Cinematic Header */}
       <div className="fixed top-0 left-0 right-0 h-20 sm:h-32 bg-gradient-to-b from-black/80 to-transparent z-20 pointer-events-none" />
 
+      <TalentSidebar />
+
       {/* Dashboard Container */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 pt-24 pb-8 sm:px-6 sm:pt-32 sm:pb-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 pt-24 pb-8 sm:px-6 sm:pt-32 sm:pb-12 w-full">
         {/* Dashboard Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -230,6 +283,22 @@ export default function TalentDashboard() {
           <ProfileCompletionCard />
         )}
 
+        {!access.loading && access.profileCompletion >= 70 && !access.paymentConfirmed && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/30 rounded text-sm text-[var(--text-secondary)]"
+          >
+            <span className="text-[var(--accent-gold)]">Payment required</span> to unlock job listings.{" "}
+            <button
+              onClick={() => router.push("/auth/payment")}
+              className="text-[var(--accent-gold)] hover:underline ml-1"
+            >
+              Complete payment
+            </button>
+          </motion.div>
+        )}
+
         {/* Applications List */}
         {loading ? (
           <div className="text-center py-12">
@@ -248,7 +317,7 @@ export default function TalentDashboard() {
               Explore open casting calls and submit your first application.
             </p>
             <button
-              onClick={() => router.push("/")}
+              onClick={handleBrowseJobs}
               className="px-6 py-2 border border-white/20 text-white hover:border-white/40 transition font-body text-sm"
             >
               Browse Jobs

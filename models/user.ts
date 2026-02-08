@@ -34,6 +34,11 @@ const UserSchema = new mongoose.Schema(
     experience: [{ type: String }],
     portfolio: [{ type: String }], // Array of media URLs
     cv: { type: String }, // CV / resume URL
+    // Payment tracking (talent)
+    paymentConfirmed: { type: Boolean, default: false, index: true },
+    paymentMethod: { type: String },
+    paymentReference: { type: String },
+    paymentAt: { type: Date },
     // Admin restrictions
     frozen: { type: Boolean, default: false, index: true }, // Account frozen (talent/director)
     shadowLimited: { type: Boolean, default: false }, // Reduced visibility (talent)

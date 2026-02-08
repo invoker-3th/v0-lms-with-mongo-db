@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import Job from "@/models/job";
 import User from "@/models/user";
 import { getTrustLevel, getDirectorCapabilities } from "@/lib/director-trust";
+import { MIN_PROFILE_COMPLETION } from "@/lib/profile-completion";
 
 /**
  * GET /api/jobs
@@ -24,15 +25,31 @@ export async function GET(req: Request) {
     // Check if user is authenticated and is a talent
     const session = await auth();
     if (session?.user) {
-      const user = session.user as any;
-      
-      // If talent and not paid, block access
-      if (user.role === "TALENT" && !user.paymentConfirmed) {
+      const sessionUser = session.user as any;
+      if (sessionUser.role === "TALENT") {
+        const dbUser = await User.findById(sessionUser.id).select("paymentConfirmed profileCompletion");
+
+        const paymentConfirmed = !!dbUser?.paymentConfirmed;
+        const profileCompletion = dbUser?.profileCompletion ?? 0;
+
+        if (!paymentConfirmed || profileCompletion < MIN_PROFILE_COMPLETION) {
+          const needsProfile = profileCompletion < MIN_PROFILE_COMPLETION;
+          const needsPayment = !paymentConfirmed;
+          const reason = needsProfile ? "PROFILE_INCOMPLETE" : "PAYMENT_REQUIRED";
         return NextResponse.json(
-          { error: "Payment required. Please complete payment to access jobs.", redirect: "/auth/payment-required" },
+            {
+              error: reason,
+              message: needsProfile
+                ? `Your profile must be at least ${MIN_PROFILE_COMPLETION}% complete to access jobs.`
+                : "Payment required. Please complete payment to access jobs.",
+              required: MIN_PROFILE_COMPLETION,
+              current: profileCompletion,
+              redirect: needsPayment ? "/auth/payment-required" : "/talent/profile",
+            },
           { status: 403 }
         );
       }
+    }
     }
 
     // Fetch all open jobs, sorted by deadline (soonest first)

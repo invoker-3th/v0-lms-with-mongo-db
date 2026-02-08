@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import TalentSidebar from "@/app/components/talent-sidebar";
 
 type ProfileData = {
   id: string;
@@ -18,6 +19,7 @@ type ProfileData = {
   portfolio: string[];
   profileCompletion: number;
   verificationTier: string;
+  paymentConfirmed: boolean;
 };
 
 export default function TalentProfilePage() {
@@ -311,6 +313,10 @@ export default function TalentProfilePage() {
       if (res.ok) {
         setSuccess(true);
         setProfile(data.profile);
+        if (data?.profile?.profileCompletion >= 70 && !data?.profile?.paymentConfirmed) {
+          router.push("/auth/payment");
+          return;
+        }
         setTimeout(() => {
           setSuccess(false);
         }, 3000);
@@ -339,7 +345,7 @@ export default function TalentProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] relative">
+    <div className="min-h-screen bg-[var(--bg-main)] relative flex">
       {/* Noise overlay */}
       <div
         className="fixed inset-0 opacity-[0.015] pointer-events-none z-0"
@@ -352,8 +358,10 @@ export default function TalentProfilePage() {
       {/* Fixed Cinematic Header */}
       <div className="fixed top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/80 to-transparent z-20 pointer-events-none" />
 
+      <TalentSidebar />
+
       {/* Dashboard Container */}
-      <div className="relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-12">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-12 w-full">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -402,6 +410,30 @@ export default function TalentProfilePage() {
                 Verification Tier: <span className="text-white capitalize">{profile.verificationTier}</span>
               </p>
             )}
+          </motion.div>
+        )}
+
+        {profile && profile.profileCompletion >= 70 && !profile.paymentConfirmed && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-5 bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/30 rounded"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-white text-sm font-medium mb-1">Profile complete â€” payment required</p>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  Complete payment to unlock job listings and applications.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push("/auth/payment")}
+                className="px-4 py-2 bg-[var(--accent-gold)] text-black text-sm font-medium rounded hover:opacity-90 transition"
+              >
+                Go to Payment
+              </button>
+            </div>
           </motion.div>
         )}
 

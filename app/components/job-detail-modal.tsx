@@ -37,7 +37,9 @@ export default function JobDetailModal({
   // Check if user is a talent and if they've paid
   const user = session?.user as any;
   const isTalent = user?.role === "TALENT";
-  const hasNotPaid = isTalent && !user?.paymentConfirmed;
+  const needsPayment = isTalent && !user?.paymentConfirmed;
+  const profileCompletion = isTalent ? (user?.profileCompletion ?? 0) : 0;
+  const needsProfile = isTalent && profileCompletion < 70;
 
   // Check if user has already applied to this job
   useEffect(() => {
@@ -65,7 +67,7 @@ export default function JobDetailModal({
     }
 
     checkApplied();
-  }, [jobId, hasNotPaid]);
+  }, [jobId, needsPayment]);
 
   return (
     <AnimatePresence>
@@ -149,7 +151,22 @@ export default function JobDetailModal({
 
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-4">
-              {hasNotPaid ? (
+              {needsProfile ? (
+                <>
+                  <Link
+                    href="/talent/profile"
+                    className="px-6 py-3 bg-[var(--accent-gold)] text-black font-medium hover:opacity-90 transition text-center"
+                  >
+                    Complete Profile
+                  </Link>
+                  <button
+                    onClick={onClose}
+                    className="px-6 py-3 border border-white/20 text-white hover:bg-white/10 transition"
+                  >
+                    Close
+                  </button>
+                </>
+              ) : needsPayment ? (
                 <>
                   <Link
                     href="/auth/payment-required"
