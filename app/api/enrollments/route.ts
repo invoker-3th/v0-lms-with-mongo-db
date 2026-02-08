@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { mockDB } from "@/lib/mock-db"
+import { getDB } from "@/lib/mock-db"
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,16 +10,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 })
     }
 
-    const enrollments = mockDB.enrollments.filter((e) => e.userId === userId)
+    const db = getDB()
+    const enrollments = await db.getEnrollmentsByUserId(userId)
 
     // Add course details to each enrollment
-    const enrichedEnrollments = enrollments.map((enrollment) => {
-      const course = mockDB.courses.find((c) => c.id === enrollment.courseId)
-      return {
-        ...enrollment,
-        course,
-      }
-    })
+    const enrichedEnrollments = await Promise.all(
+      enrollments.map(async (enrollment) => {
+        const course = await db.getCourseById(enrollment.courseId)
+        return {
+          ...enrollment,
+          course,
+        }
+      })
+    )
 
     return NextResponse.json({ enrollments: enrichedEnrollments })
   } catch (error) {
@@ -37,20 +40,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
+    const db = getDB()
     // Check if already enrolled
-    const existing = mockDB.enrollments.find((e) => e.userId === userId && e.courseId === courseId)
+    const existing = await db.getEnrollment(userId, courseId)
 
     if (existing) {
       return NextResponse.json({ error: "Already enrolled in this course" }, { status: 400 })
     }
 
     // Create enrollment
-    const enrollment = mockDB.createEnrollment({
+    const enrollment = await db.createEnrollment({
       userId,
       courseId,
       progress: 0,
-      enrolledAt: new Date().toISOString(),
-      lastAccessedAt: new Date().toISOString(),
+      completedLessons: [],
+      status: "active",
+      enrolledAt: new Date(),
     })
 
     return NextResponse.json({ enrollment }, { status: 201 })

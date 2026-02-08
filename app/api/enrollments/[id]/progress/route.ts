@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { mockDB } from "@/lib/mock-db"
+import { getDB } from "@/lib/mock-db"
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -7,18 +7,21 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const body = await request.json()
     const { progress, completedLessons } = body
 
-    const enrollment = mockDB.enrollments.find((e) => e.id === id)
-
+    const db = getDB()
+    const enrollment = await db.getEnrollmentById(id)
+    
     if (!enrollment) {
       return NextResponse.json({ error: "Enrollment not found" }, { status: 404 })
     }
 
-    // Update enrollment progress
-    const updated = mockDB.updateEnrollment(id, {
+    const updated = await db.updateEnrollment(id, {
       progress,
       completedLessons,
-      lastAccessedAt: new Date().toISOString(),
     })
+
+    if (!updated) {
+      return NextResponse.json({ error: "Enrollment not found" }, { status: 404 })
+    }
 
     return NextResponse.json({ enrollment: updated })
   } catch (error) {

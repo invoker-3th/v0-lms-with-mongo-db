@@ -32,6 +32,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navigation = [
     { name: "Dashboard", href: "/admin", icon: BarChart3 },
+    { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+    { name: "Users", href: "/admin/users", icon: Users },
     { name: "Courses", href: "/admin/courses", icon: BookOpen },
     { name: "Students", href: "/admin/students", icon: Users },
     { name: "Payments", href: "/admin/payments", icon: CreditCard },

@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { BookOpen, Users, TrendingUp, Award } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { BookOpen, Users, TrendingUp, Award, Plus, Eye, Edit, BarChart3 } from "lucide-react"
 import { useAuthStore } from "@/lib/store"
-import { db } from "@/lib/mock-db"
-import type { Course } from "@/lib/types"
+import { getDB } from "@/lib/mock-db"
+import type { Course, Enrollment } from "@/lib/types"
 import Link from "next/link"
 
 export default function InstructorDashboard() {
@@ -17,119 +18,275 @@ export default function InstructorDashboard() {
     totalStudents: 0,
     totalEnrollments: 0,
     avgRating: 0,
+    totalRevenue: 0,
+    publishedCourses: 0,
+    draftCourses: 0,
   })
 
   useEffect(() => {
     if (user) {
+      loadInstructorData()
+    }
+  }, [user])
+
+  const loadInstructorData = async () => {
+    try {
+      const db = getDB()
+      
       // Get instructor's courses
-      const instructorCourses = db.courses.filter(
-        (c) => c.instructor === user.name || c.instructorId === user.id
-      )
+      const instructorCourses = await db.getCoursesByInstructor(user?.id || "")
       setCourses(instructorCourses)
 
-      // Calculate stats
-      const enrollments = db.enrollments.filter((e) =>
+      // Get all enrollments
+      const allEnrollments = await db.getAllEnrollments()
+      const courseEnrollments = allEnrollments.filter((e) =>
         instructorCourses.some((c) => c.id === e.courseId)
       )
 
-      const enrolledStudents = new Set(enrollments.map((e) => e.userId)).size
+      const enrolledStudents = new Set(courseEnrollments.map((e) => e.userId)).size
 
-      const allRatings = instructorCourses.flatMap((c) => c.ratings || [])
+      // Calculate average rating
+      const coursesWithRatings = instructorCourses.filter((c) => c.rating > 0)
       const avgRating =
-        allRatings.length > 0
-          ? allRatings.reduce((sum, r) => sum + r.rating, 0) / allRatings.length
+        coursesWithRatings.length > 0
+          ? coursesWithRatings.reduce((sum, c) => sum + c.rating, 0) / coursesWithRatings.length
           : 0
+
+      // Calculate revenue (from payments for instructor's courses)
+      const allPayments = await db.getAllPayments()
+      const coursePayments = allPayments.filter((p) =>
+        instructorCourses.some((c) => c.id === p.courseId) && 
+        (p.status === "completed" || p.status === "success")
+      )
+      const totalRevenue = coursePayments.reduce((sum, p) => {
+        if (p.currency === "NGN") return sum + p.amount
+        if (p.currency === "USD") return sum + p.amount * 1250 // Approx conversion
+        if (p.currency === "GBP") return sum + p.amount * 1580
+        return sum
+      }, 0)
+
+      const publishedCourses = instructorCourses.filter((c) => c.published).length
+      const draftCourses = instructorCourses.filter((c) => !c.published).length
 
       setStats({
         totalCourses: instructorCourses.length,
         totalStudents: enrolledStudents,
-        totalEnrollments: enrollments.length,
+        totalEnrollments: courseEnrollments.length,
         avgRating: Number(avgRating.toFixed(1)),
+        totalRevenue,
+        publishedCourses,
+        draftCourses,
       })
+    } catch (error) {
+      console.error("Error loading instructor data:", error)
     }
-  }, [user])
+  }
 
   const statCards = [
-    { title: "Total Courses", value: stats.totalCourses, icon: BookOpen, color: "text-blue-600" },
-    { title: "Total Students", value: stats.totalStudents, icon: Users, color: "text-green-600" },
-    { title: "Total Enrollments", value: stats.totalEnrollments, icon: TrendingUp, color: "text-purple-600" },
-    { title: "Avg Rating", value: `${stats.avgRating} ★`, icon: Award, color: "text-orange-600" },
+    { 
+      title: "Total Courses", 
+      value: stats.totalCourses, 
+      icon: BookOpen, 
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
+      subtitle: `${stats.publishedCourses} published, ${stats.draftCourses} drafts`
+    },
+    { 
+      title: "Total Students", 
+      value: stats.totalStudents, 
+      icon: Users, 
+      color: "text-green-600",
+      bgColor: "bg-green-50",
+      subtitle: "Unique enrolled students"
+    },
+    { 
+      title: "Total Enrollments", 
+      value: stats.totalEnrollments, 
+      icon: TrendingUp, 
+      color: "text-purple-600",
+      bgColor: "bg-purple-50",
+      subtitle: "All course enrollments"
+    },
+    { 
+      title: "Average Rating", 
+      value: `${stats.avgRating} ★`, 
+      icon: Award, 
+      color: "text-orange-600",
+      bgColor: "bg-orange-50",
+      subtitle: "Across all courses"
+    },
+    {
+      title: "Total Revenue",
+      value: `₦${stats.totalRevenue.toLocaleString()}`,
+      icon: TrendingUp,
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-50",
+      subtitle: "From all courses"
+    },
   ]
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Welcome, {user?.name}!</h1>
-        <p className="text-muted-foreground mt-2">Manage your courses and track student progress</p>
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Welcome, {user?.name}!</h1>
+          <p className="text-muted-foreground mt-2">Manage your courses and track student progress</p>
+        </div>
+        <Link href="/instructor/courses/new">
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Course
+          </Button>
+        </Link>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         {statCards.map((stat) => {
           const Icon = stat.icon
           return (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <Card key={stat.title} className="relative overflow-hidden">
+              <div className={`absolute top-0 right-0 w-32 h-32 ${stat.bgColor} opacity-20 rounded-full -mr-16 -mt-16`} />
+              <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
                 <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <Icon className={`h-4 w-4 ${stat.color}`} />
+                <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                  <Icon className={`h-5 w-5 ${stat.color}`} />
+                </div>
               </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{stat.value}</p>
+              <CardContent className="relative z-10">
+                <p className="text-2xl font-bold mb-1">{stat.value}</p>
+                {stat.subtitle && (
+                  <p className="text-xs text-muted-foreground">{stat.subtitle}</p>
+                )}
               </CardContent>
             </Card>
           )
         })}
       </div>
 
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <Link href="/instructor/courses/new">
+          <Card className="hover:border-primary transition-colors cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Plus className="h-5 w-5 text-primary" />
+                Create Course
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Start creating a new course and share your knowledge
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/instructor/analytics">
+          <Card className="hover:border-primary transition-colors cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                View Analytics
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Track course performance and student engagement
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/instructor/courses">
+          <Card className="hover:border-primary transition-colors cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                Manage Courses
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Edit, update, and manage all your courses
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
       {/* My Courses Section */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">My Courses</h2>
-          <Link href="/instructor/upload">
-            <Button>Upload New Course</Button>
+          <Link href="/instructor/courses">
+            <Button variant="outline">View All</Button>
           </Link>
         </div>
 
         {courses.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {courses.map((course) => {
-              const courseEnrollments = db.enrollments.filter((e) => e.courseId === course.id)
-              return (
-                <Card key={course.id}>
-                  <CardHeader>
-                    <CardTitle className="line-clamp-2">{course.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{course.description}</p>
-                    <div className="space-y-2 text-sm">
-                      <p>
-                        <span className="font-semibold">Students:</span> {courseEnrollments.length}
-                      </p>
-                      <p>
-                        <span className="font-semibold">Status:</span>{" "}
-                        <span className="capitalize">{course.status}</span>
-                      </p>
-                      <p>
-                        <span className="font-semibold">Price:</span> ₦{course.priceNGN.toLocaleString()} / ${course.priceUSD}
-                      </p>
+            {courses.slice(0, 6).map((course) => (
+              <Card key={course.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="line-clamp-2 text-lg">{course.title}</CardTitle>
+                    {course.published ? (
+                      <Badge className="bg-green-500">Published</Badge>
+                    ) : (
+                      <Badge variant="secondary">Draft</Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                    {course.description}
+                  </p>
+                  <div className="space-y-2 text-sm mb-4">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Students:</span>
+                      <span className="font-semibold">{course.enrollmentCount}</span>
                     </div>
-                    <Link href={`/instructor/courses/${course.id}`}>
-                      <Button variant="outline" className="w-full mt-4 bg-transparent">
-                        Manage Course
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Rating:</span>
+                      <span className="font-semibold">{course.rating} ★</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Price:</span>
+                      <span className="font-semibold">
+                        ₦{course.price.NGN.toLocaleString()} / ${course.price.USD}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Link href={`/courses/${course.slug}`} className="flex-1">
+                      <Button variant="outline" className="w-full" size="sm">
+                        <Eye className="h-4 w-4 mr-2" />
+                        View
                       </Button>
                     </Link>
-                  </CardContent>
-                </Card>
-              )
-            })}
+                    <Link href={`/instructor/courses/${course.id}/edit`} className="flex-1">
+                      <Button variant="outline" className="w-full" size="sm">
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         ) : (
           <Card>
             <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground">No courses yet. Create your first course!</p>
-              <div className="text-center mt-4">
-                <Link href="/instructor/upload">
-                  <Button>Upload Your First Course</Button>
+              <div className="text-center py-12">
+                <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-center text-muted-foreground mb-4">
+                  No courses yet. Create your first course to get started!
+                </p>
+                <Link href="/instructor/courses/new">
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Your First Course
+                  </Button>
                 </Link>
               </div>
             </CardContent>

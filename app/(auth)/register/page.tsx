@@ -10,13 +10,21 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react"
+import { Loader2, AlertCircle, CheckCircle2, User, GraduationCap, Shield, DollarSign, Info } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { useAuthStore } from "@/lib/store"
 import { registerSchema } from "@/lib/validation"
 import { useToast } from "@/hooks/use-toast"
+import type { UserRole } from "@/lib/types"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -28,6 +36,7 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "student" as UserRole,
     acceptTerms: false,
   })
   const [loading, setLoading] = useState(false)
@@ -59,19 +68,32 @@ export default function RegisterPage() {
       // Validate input
       const validated = registerSchema.parse(formData)
 
-      // Attempt registration
-      const result = await authService.register(validated.email, validated.password, validated.name)
+      // Attempt registration with role
+      const result = await authService.register(
+        validated.email,
+        validated.password,
+        validated.name,
+        formData.role
+      )
 
       // Set auth state
       setAuth(result.user, result.token)
 
+      // Role-specific redirects
+      const redirectPaths: Record<UserRole, string> = {
+        student: "/dashboard",
+        instructor: "/instructor",
+        admin: "/admin",
+        finance: "/finance",
+      }
+
       toast({
         title: "Account created!",
-        description: "Welcome to PromptCare Academy. Let's start learning!",
+        description: `Welcome to PromptCare Academy as a ${formData.role}!`,
       })
 
-      // Redirect to dashboard
-      router.push("/dashboard")
+      // Redirect based on role
+      router.push(redirectPaths[formData.role] || "/dashboard")
     } catch (error: unknown) {
       if (error instanceof Error && error.message === "User already exists") {
         setError("An account with this email already exists")
@@ -121,6 +143,53 @@ export default function RegisterPage() {
                 required
                 disabled={loading}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role">Account Type</Label>
+              <Select
+                value={formData.role}
+                onValueChange={(value) => setFormData({ ...formData, role: value as UserRole })}
+                disabled={loading}
+              >
+                <SelectTrigger id="role">
+                  <SelectValue placeholder="Select account type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="h-4 w-4" />
+                      <span>Student - Learn and enroll in courses</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="instructor">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      <span>Instructor - Create and teach courses</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="admin">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      <span>Admin - Manage platform (requires approval)</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="finance">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      <span>Finance - Manage payments (requires approval)</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              {(formData.role === "admin" || formData.role === "finance") && (
+                <Alert className="bg-blue-50 border-blue-200">
+                  <Info className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-blue-800 text-xs">
+                    Admin and Finance accounts require approval. You'll be notified once your account is activated.
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
 
             <div className="space-y-2">

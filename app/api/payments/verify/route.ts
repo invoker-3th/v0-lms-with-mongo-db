@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { paystackService } from "@/lib/paystack"
-import { mockDB } from "@/lib/mock-db"
+import { getDB } from "@/lib/mock-db"
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,24 +11,52 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Payment reference is required" }, { status: 400 })
     }
 
-    // Verify payment
-    const isVerified = await paystackService.verifyPayment(reference)
-
-    if (!isVerified) {
-      return NextResponse.json({ error: "Payment verification failed" }, { status: 400 })
-    }
-
-    // Get payment details
-    const payment = mockDB.payments.find((p) => p.reference === reference)
+    const db = getDB()
+    // Get payment details first
+    const payment = await db.getPaymentByReference(reference)
 
     if (!payment) {
       return NextResponse.json({ error: "Payment not found" }, { status: 404 })
     }
 
+    // Verify payment with Paystack
+    const verification = await paystackService.verifyPayment(
+      reference,
+      payment.amount,
+      payment.currency
+    )
+
+    if (verification.status === "success") {
+      // Update payment status
+      await db.updatePaymentByReference(reference, {
+        status: "completed",
+        completedAt: new Date(),
+      })
+
+      // Auto-enroll user in course if not already enrolled
+      const enrollment = await db.getEnrollment(payment.userId, payment.courseId)
+      if (!enrollment) {
+        await db.createEnrollment({
+          userId: payment.userId,
+          courseId: payment.courseId,
+          progress: 0,
+          completedLessons: [],
+          status: "active",
+          enrolledAt: new Date(),
+        })
+      }
+    } else {
+      await db.updatePaymentByReference(reference, {
+        status: "failed",
+      })
+    }
+
+    const updatedPayment = await db.getPaymentByReference(reference)
+
     return NextResponse.json({
       success: true,
-      verified: true,
-      payment,
+      verified: verification.status === "success",
+      payment: updatedPayment,
     })
   } catch (error) {
     console.error("Payment verification error:", error)

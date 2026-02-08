@@ -32,7 +32,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
   const navigation = [
     { name: "Dashboard", href: "/instructor", icon: Home },
     { name: "My Courses", href: "/instructor/courses", icon: BookOpen },
-    { name: "Upload Course", href: "/instructor/upload", icon: Upload },
+    { name: "Create Course", href: "/instructor/courses/new", icon: Upload },
     { name: "Analytics", href: "/instructor/analytics", icon: BarChart3 },
     { name: "Settings", href: "/instructor/settings", icon: Settings },
   ]

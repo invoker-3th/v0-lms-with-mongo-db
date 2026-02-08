@@ -354,6 +354,10 @@ class MockDatabase {
     return this.users.find((u) => u.id === id)
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return this.users
+  }
+
   async createUser(user: Omit<User, "id" | "createdAt" | "updatedAt">): Promise<User> {
     const newUser: User = {
       ...user,
@@ -413,6 +417,17 @@ class MockDatabase {
     return this.courses[courseIndex]
   }
 
+  async deleteCourse(id: string): Promise<boolean> {
+    const idx = this.courses.findIndex((c) => c.id === id)
+    if (idx === -1) return false
+    this.courses.splice(idx, 1)
+    return true
+  }
+
+  async getCoursesByInstructor(instructorId: string): Promise<Course[]> {
+    return this.courses.filter((c) => c.instructorId === instructorId)
+  }
+
   // Enrollment methods
   async getEnrollmentsByUserId(userId: string): Promise<Enrollment[]> {
     return this.enrollments.filter((e) => e.userId === userId)
@@ -420,6 +435,14 @@ class MockDatabase {
 
   async getEnrollment(userId: string, courseId: string): Promise<Enrollment | undefined> {
     return this.enrollments.find((e) => e.userId === userId && e.courseId === courseId)
+  }
+
+  async getEnrollmentById(id: string): Promise<Enrollment | undefined> {
+    return this.enrollments.find((e) => e.id === id)
+  }
+
+  async getAllEnrollments(): Promise<Enrollment[]> {
+    return this.enrollments
   }
 
   async createEnrollment(enrollment: Omit<Enrollment, "id">): Promise<Enrollment> {
@@ -447,8 +470,22 @@ class MockDatabase {
     return this.payments.filter((p) => p.userId === userId)
   }
 
+  async getAllPayments(): Promise<Payment[]> {
+    return this.payments
+  }
+
   async getPaymentByReference(reference: string): Promise<Payment | undefined> {
     return this.payments.find((p) => p.reference === reference)
+  }
+
+  async updatePaymentByReference(reference: string, updates: Partial<Payment>): Promise<Payment | undefined> {
+    const paymentIndex = this.payments.findIndex((p) => p.reference === reference)
+    if (paymentIndex === -1) return undefined
+    this.payments[paymentIndex] = {
+      ...this.payments[paymentIndex],
+      ...updates,
+    }
+    return this.payments[paymentIndex]
   }
 
   async createPayment(payment: Omit<Payment, "id">): Promise<Payment> {
@@ -496,5 +533,30 @@ class MockDatabase {
   }
 }
 
-export const db = new MockDatabase()
+// Use MongoDB if connection string is available, otherwise use mock
+let dbInstance: MockDatabase | any = null
+
+export function getDB() {
+  if (process.env.MONGODB_URI) {
+    // Use MongoDB database
+    try {
+      const { getDatabase } = require('./mongodb-db')
+      return getDatabase()
+    } catch (error) {
+      console.error('Failed to load MongoDB, falling back to mock:', error)
+      // Fall back to mock if MongoDB fails
+      if (!dbInstance) {
+        dbInstance = new MockDatabase()
+      }
+      return dbInstance
+    }
+  }
+  // Use mock database
+  if (!dbInstance) {
+    dbInstance = new MockDatabase()
+  }
+  return dbInstance
+}
+
+export const db = getDB()
 export const mockDB = db

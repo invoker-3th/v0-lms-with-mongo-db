@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server"
 import { authService } from "@/lib/auth"
+import { getTokenFromRequest } from "@/lib/jwt"
 
 export async function GET(request: Request) {
   try {
-    const authHeader = request.headers.get("authorization")
+    const token = getTokenFromRequest(request)
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const token = authHeader.substring(7)
     const user = await authService.getCurrentUser(token)
 
     if (!user) {

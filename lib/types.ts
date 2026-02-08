@@ -10,6 +10,7 @@ export interface User {
   role: UserRole
   avatar?: string
   bio?: string
+  status?: "active" | "suspended"
   enrolledCourses: string[] // Course IDs
   createdAt: Date
   updatedAt: Date

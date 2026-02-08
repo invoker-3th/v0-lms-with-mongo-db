@@ -2,62 +2,154 @@
 
 This document outlines the critical features and improvements needed to take PromptCare Academy from a demo to a production-ready platform.
 
-## Phase 1: Backend Integration (Week 1-2)
+## ✅ COMPLETED FEATURES
 
-### 1.1 Database Setup
-- [ ] Set up MongoDB Atlas or PostgreSQL database
-- [ ] Create database schemas based on types.ts
-- [ ] Add database indexes for performance
-- [ ] Implement connection pooling
-- [ ] Add backup and recovery procedures
+### Phase 1: Backend Integration - COMPLETED
 
-**Files to Create/Modify:**
-- `lib/db.ts` - Replace mock-db with real database
-- `lib/db/models/` - Create database models/schemas
-- `lib/db/migrations/` - Create migration scripts
+#### 1.1 Database Setup ✅
+- [x] Set up MongoDB Atlas database
+- [x] Create database schemas based on types.ts
+- [x] Implement connection pooling
+- [x] MongoDB connection utility created (`lib/mongodb.ts`)
+- [x] Full MongoDB database layer (`lib/mongodb-db.ts`)
 
-### 1.2 Authentication & Security
-- [ ] Replace mock auth service with real authentication
+**Files Created:**
+- `lib/mongodb.ts` - MongoDB connection with pooling
+- `lib/mongodb-db.ts` - Complete database operations layer
+- `scripts/seed-db.ts` - Database seeding script
+
+#### 1.3 API Routes - Converted to MongoDB ✅
+- [x] Update `/api/courses/*` to fetch from database
+- [x] Update `/api/enrollments/*` to use database
+- [x] Update `/api/payments/*` to use database
+- [x] Update `/api/auth/*` routes to use database
+- [x] All API routes now use MongoDB when available
+
+**Files Updated:**
+- `app/api/courses/route.ts` - Uses MongoDB
+- `app/api/courses/[id]/route.ts` - Uses MongoDB
+- `app/api/enrollments/route.ts` - Uses MongoDB
+- `app/api/enrollments/[id]/progress/route.ts` - Uses MongoDB
+- `app/api/payments/initialize/route.ts` - Uses MongoDB
+- `app/api/payments/verify/route.ts` - Uses MongoDB
+- `app/api/auth/login/route.ts` - Uses MongoDB
+- `app/api/auth/register/route.ts` - Uses MongoDB
+- `lib/auth.ts` - Updated to use MongoDB
+- `lib/mock-db.ts` - Auto-detects MongoDB and uses it when available
+
+#### Dashboards Verified ✅
+- [x] Student Dashboard (`/dashboard`) - Exists and functional
+- [x] Instructor Dashboard (`/instructor`) - Exists and functional
+- [x] Finance Dashboard (`/finance`) - Exists and functional
+- [x] Admin Dashboard (`/admin`) - Exists and functional
+
+---
+
+## 🚀 NEXT PRIORITIES (Based on App Functionality Requirements)
+
+### Priority 1: User Onboarding & Role Management (CRITICAL)
+
+#### 1.1 Enhanced User Registration
+- [ ] Add role selection during registration (Student, Instructor, Admin, Finance)
+- [ ] Implement role-based registration flow
+- [ ] Add admin approval workflow for Admin/Finance roles
+- [ ] Create role assignment interface for admins
+
+**Files to Create/Update:**
+- `app/(auth)/register/page.tsx` - Add role selection
+- `app/api/auth/register/route.ts` - Handle role assignment
+- `app/admin/users/create/page.tsx` - Admin user creation
+- `lib/validation.ts` - Add role validation schema
+
+#### 1.2 Authentication & Security (CRITICAL)
 - [ ] Implement JWT token generation and validation
-- [ ] Add password hashing (bcrypt)
+- [ ] Add password hashing (bcrypt) - **SECURITY CRITICAL**
+- [ ] Replace base64 token encoding with JWT
 - [ ] Implement refresh token rotation
-- [ ] Add email verification for new accounts
-- [ ] Implement password reset flow with email
 - [ ] Add rate limiting on auth endpoints
-- [ ] Implement CORS properly
+- [ ] Add email verification for new accounts (optional but recommended)
 
 **Files to Update:**
-- `lib/auth.ts` - Connect to real auth service
-- `app/api/auth/*` - Update routes for real auth
+- `lib/auth.ts` - Add JWT and bcrypt
+- `app/api/auth/*` - Update for JWT
 - `.env.example` - Add JWT_SECRET, BCRYPT_ROUNDS
 
-### 1.3 API Routes - Convert to Real Backend Calls
-- [ ] Update `/api/courses/*` to fetch from database
-- [ ] Update `/api/enrollments/*` to use database
-- [ ] Update `/api/payments/*` to use database
-- [ ] Update `/api/auth/*` routes
-- [ ] Add proper error handling and validation
-- [ ] Add request logging and monitoring
+**Dependencies to Install:**
+```bash
+npm install jsonwebtoken bcryptjs
+npm install --save-dev @types/jsonwebtoken @types/bcryptjs
+```
 
-**Files to Update:**
-- `app/api/**/*` - All route handlers
+### Priority 2: Real Paystack Payment Integration (CRITICAL)
 
-## Phase 2: Payment Integration (Week 2-3)
-
-### 2.1 Paystack Integration
-- [ ] Create Paystack service wrapper
+#### 2.1 Real Paystack Integration
+- [ ] Replace mock Paystack with real API calls
 - [ ] Implement real payment initialization
 - [ ] Implement webhook for payment verification
-- [ ] Add payment status tracking
-- [ ] Implement refund logic
+- [ ] Add payment status tracking in database
+- [ ] Handle payment callbacks and webhooks
 - [ ] Add transaction logging
 
 **Files to Update:**
-- `lib/paystack.ts` - Replace mock with real API calls
-- `app/api/payments/*` - Real payment processing
-- `app/api/webhooks/paystack` - New webhook endpoint
+- `lib/paystack.ts` - Replace mock with real Paystack API
+- `app/api/payments/initialize/route.ts` - Real payment initialization
+- `app/api/payments/verify/route.ts` - Real payment verification
+- `app/api/webhooks/paystack/route.ts` - **NEW** Webhook endpoint
 
-### 2.2 Invoice Generation
+**Environment Variables Needed:**
+```env
+PAYSTACK_SECRET_KEY=sk_test_...
+PAYSTACK_PUBLIC_KEY=pk_test_...
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_...
+```
+
+**Dependencies:**
+```bash
+npm install axios  # If not already installed
+```
+
+### Priority 3: Course Upload & Management (CRITICAL)
+
+#### 3.1 Course Creation Wizard
+- [ ] Create multi-step course creation form
+- [ ] Add course title, description, category, level
+- [ ] Implement course pricing (NGN, USD, GBP)
+- [ ] Add course thumbnail upload
+- [ ] Create module and lesson builder
+- [ ] Add course preview functionality
+- [ ] Implement course publishing workflow
+- [ ] Add course drafts management
+
+**Files to Create:**
+- `app/instructor/courses/new/page.tsx` - Course creation wizard
+- `app/instructor/courses/new/components/` - Wizard components
+- `app/api/courses/route.ts` - POST endpoint for course creation
+- `app/api/upload/image/route.ts` - Image upload endpoint
+
+**Files to Update:**
+- `app/instructor/upload/page.tsx` - Create if doesn't exist or redirect to new course wizard
+- `app/api/courses/[id]/route.ts` - PUT endpoint for course updates
+
+#### 3.2 Course Pricing Management
+- [ ] Add pricing interface in course creation
+- [ ] Validate pricing across currencies
+- [ ] Display pricing in course listings
+- [ ] Handle currency conversion in checkout
+
+**Files to Update:**
+- Course creation form components
+- `app/api/courses/route.ts` - Validate pricing structure
+
+### Priority 4: Database Indexes & Performance
+- [ ] Add database indexes for frequently queried fields
+- [ ] Index on: email, courseId, userId, reference (payments)
+- [ ] Add query optimization
+- [ ] Implement connection pooling (already done, verify)
+
+**Files to Update:**
+- `scripts/create-indexes.ts` - **NEW** Index creation script
+
+### 2.2 Invoice Generation (Medium Priority)
 - [ ] Implement PDF invoice generation
 - [ ] Add invoice storage
 - [ ] Implement invoice download functionality
@@ -98,7 +190,7 @@ This document outlines the critical features and improvements needed to take Pro
 - `lib/notifications.ts`
 - `app/api/notifications/*`
 
-## Phase 4: File Upload & Course Materials (Week 4)
+## Phase 4: File Upload & Course Materials (After Core Features)
 
 ### 4.1 Course Video Upload
 - [ ] Integrate with cloud storage (AWS S3, Google Cloud, or Vercel Blob)
@@ -109,15 +201,15 @@ This document outlines the critical features and improvements needed to take Pro
 **Files to Create:**
 - `lib/storage-service.ts`
 - `lib/video-service.ts`
-- `app/api/upload/*`
+- `app/api/upload/video/route.ts`
 
 ### 4.2 Course Materials
 - [ ] Implement PDF/document upload
 - [ ] Add resource download tracking
 - [ ] Implement content delivery
 
-**Files to Update:**
-- `app/api/upload/*`
+**Files to Create:**
+- `app/api/upload/document/route.ts`
 - `lib/storage-service.ts`
 
 ## Phase 5: Advanced Student Features (Week 5)
@@ -165,15 +257,7 @@ This document outlines the critical features and improvements needed to take Pro
 
 ## Phase 6: Instructor Dashboard Enhancements (Week 6)
 
-### 6.1 Course Creation Wizard
-- [ ] Create multi-step course creation form
-- [ ] Add course preview
-- [ ] Implement course publishing workflow
-- [ ] Add course drafts management
-
-**Files to Create:**
-- `app/instructor/courses/new/*`
-- Components for course creation
+### 6.1 Course Creation Wizard ✅ (Moved to Priority 3 above)
 
 ### 6.2 Student Management
 - [ ] View all enrolled students per course
@@ -452,29 +536,29 @@ This document outlines the critical features and improvements needed to take Pro
 - [ ] Security monitoring
 - [ ] Uptime monitoring
 
-## Implementation Priority
+## Implementation Priority (UPDATED)
 
-**Critical (Must Have):**
-1. Database integration
-2. Real authentication
-3. Payment processing
-4. Email notifications
-5. File uploads
-6. Error handling
+**Critical (Must Have - Do First):**
+1. ✅ Database integration - **COMPLETED**
+2. **User onboarding with role selection** - **NEXT**
+3. **Password hashing & JWT authentication** - **NEXT**
+4. **Real Paystack payment integration** - **NEXT**
+5. **Course upload & creation functionality** - **NEXT**
+6. **Course pricing management** - **NEXT**
 
-**High Priority (Should Have):**
-1. Instructor course creation
-2. Course materials
-3. Certificates
-4. Analytics dashboards
-5. User management
+**High Priority (After Critical):**
+1. Database indexes for performance
+2. Email notifications (welcome, payment confirmations)
+3. Course materials upload
+4. Certificates generation
+5. User management (admin panel)
 
 **Medium Priority (Nice to Have):**
 1. Reviews and ratings
 2. Bookmarks and notes
 3. Advanced analytics
-4. Social features
-5. Referral program
+4. Invoice generation
+5. Social features
 
 **Low Priority (Future):**
 1. Live classes
@@ -483,25 +567,58 @@ This document outlines the critical features and improvements needed to take Pro
 4. AI features
 5. Mobile app
 
-## Timeline
+## Timeline (UPDATED)
 
-- **Weeks 1-3:** Core backend and payments
-- **Weeks 4-5:** File uploads and student features
+- **Week 1:** ✅ MongoDB integration - **COMPLETED**
+- **Week 2 (Current):** User onboarding, JWT auth, Real Paystack
+- **Week 3:** Course upload & pricing management
+- **Week 4-5:** File uploads and course materials
 - **Weeks 6-8:** Instructor and admin enhancements
 - **Weeks 9-10:** Marketing and deployment
 - **Weeks 11-12:** Advanced features
 
-**Estimated Total:** 12 weeks for full production readiness
+**Current Focus:** Weeks 2-3 (Critical features for MVP)
 
-## Getting Started
+## Getting Started (UPDATED)
 
-1. Copy `BACKEND_API_DOCUMENTATION.md` for backend team
-2. Set up your database (MongoDB or PostgreSQL)
-3. Start with Phase 1 (Backend Integration)
-4. Test each endpoint as implemented
-5. Deploy to staging environment
-6. Load testing before production
-7. Plan gradual rollout if needed
+### ✅ Completed Steps:
+1. ✅ MongoDB database connected
+2. ✅ All API routes converted to use MongoDB
+3. ✅ Database layer implemented
+4. ✅ All dashboards verified
+
+### 🎯 Next Steps (In Order):
+1. **Implement user onboarding with role selection**
+   - Update registration form to include role selection
+   - Add role validation
+   - Create admin user creation interface
+
+2. **Add password hashing & JWT authentication**
+   - Install bcryptjs and jsonwebtoken
+   - Update auth service to hash passwords
+   - Replace base64 tokens with JWT
+
+3. **Integrate real Paystack payment gateway**
+   - Get Paystack API keys
+   - Replace mock Paystack service
+   - Implement webhook endpoint
+   - Test payment flow end-to-end
+
+4. **Build course upload & creation functionality**
+   - Create course creation wizard
+   - Add pricing management
+   - Implement course publishing workflow
+
+5. **Add database indexes**
+   - Create indexes for performance
+   - Optimize queries
+
+### Testing Checklist:
+- [ ] Test user registration with all roles
+- [ ] Test payment flow with real Paystack
+- [ ] Test course creation and publishing
+- [ ] Test course purchase flow
+- [ ] Verify all dashboards work correctly
 
 ## Support & Resources
 
