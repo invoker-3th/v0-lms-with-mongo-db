@@ -85,8 +85,9 @@ export default function TalentSidebar() {
   }
 
   return (
-    <aside className="flex flex-col w-14 md:w-56 bg-black/30 border-r border-white/10 min-h-screen pt-6 md:pt-8 px-2 md:px-4">
-      <div className="flex items-center gap-3 mb-4 md:mb-6">
+    <>
+      <aside className="hidden md:flex flex-col w-56 bg-black/30 border-r border-white/10 min-h-screen pt-6 md:pt-8 px-2 md:px-4">
+        <div className="flex items-center gap-3 mb-4 md:mb-6">
         <div className="relative">
           {user?.image ? (
             <img
@@ -128,7 +129,7 @@ export default function TalentSidebar() {
         </div>
       </div>
       <p className="hidden md:block text-xs tracking-[0.2em] text-[var(--accent-gold)] mb-4">TALENT</p>
-      <nav className="flex flex-col gap-2">
+        <nav className="flex flex-col gap-2">
         {navItems.map((item) => {
           const active = pathname === item.href;
           const showPending = item.href === "/jobs" && paymentPending;
@@ -183,7 +184,65 @@ export default function TalentSidebar() {
           </span>
           <span className="hidden md:inline">Sign Out</span>
         </button>
-      </nav>
-    </aside>
+        </nav>
+      </aside>
+
+      {/* Mobile Bottom Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-black/70 backdrop-blur border-t border-white/10">
+        <div className="flex items-center justify-around py-2">
+          {navItems.map((item) => {
+            const active = pathname === item.href;
+            const showPending = item.href === "/jobs" && paymentPending;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex flex-col items-center gap-1 text-[10px] ${
+                  active ? "text-[var(--accent-gold)]" : "text-[var(--text-secondary)]"
+                }`}
+              >
+                <div className="relative">
+                  <Icon name={item.icon as any} />
+                  {showPending && (
+                    <span className="absolute -top-1 -right-2 w-2 h-2 bg-[var(--accent-gold)] rounded-full" />
+                  )}
+                </div>
+                {active ? (
+                  <span className="text-[10px]">{item.label}</span>
+                ) : (
+                  <span className="sr-only">{item.label}</span>
+                )}
+              </Link>
+            );
+          })}
+          <Link
+            href="/"
+            className="flex flex-col items-center gap-1 text-[10px] text-[var(--text-secondary)]"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 10.5L12 3l9 7.5" />
+              <path d="M5 9.5V21h14V9.5" />
+            </svg>
+            <span className="sr-only">Home</span>
+          </Link>
+          <button
+            onClick={() => {
+              signOut({ redirect: false }).then(() => {
+                router.push("/");
+                router.refresh();
+              });
+            }}
+            className="flex flex-col items-center gap-1 text-[10px] text-[var(--text-secondary)]"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <path d="M16 17l5-5-5-5" />
+              <path d="M21 12H9" />
+            </svg>
+            <span className="sr-only">Sign Out</span>
+          </button>
+        </div>
+      </div>
+    </>
   );
 }

@@ -56,17 +56,17 @@ export default function TalentInboxPage() {
 
       <TalentSidebar />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-12 w-full">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 pt-12 pb-24 sm:px-6 sm:pt-20 sm:pb-12 w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
           className="mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-heading text-(--text-primary) mb-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading text-(--text-primary) mb-2">
             Inbox
           </h1>
-          <p className="text-sm font-body text-(--text-secondary)">
+          <p className="text-xs sm:text-sm font-body text-(--text-secondary)">
             Messages from casting directors and admins. Reply via email.
           </p>
         </motion.div>

@@ -379,7 +379,7 @@ export default function TalentProfilePage() {
       <TalentSidebar />
 
       {/* Dashboard Container */}
-      <div className="relative z-10 max-w-4xl mx-auto px-6 pt-16 sm:pt-20 pb-12 w-full">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 pt-12 sm:pt-20 pb-24 sm:pb-12 w-full">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -387,10 +387,10 @@ export default function TalentProfilePage() {
           transition={{ duration: 0.3, ease: "easeOut" }}
           className="mb-10"
         >
-          <h1 className="text-3xl md:text-4xl font-heading text-white mb-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading text-white mb-2">
             Edit Profile
           </h1>
-          <p className="text-sm font-body text-[var(--text-secondary)]">
+          <p className="text-xs sm:text-sm font-body text-[var(--text-secondary)]">
             Complete your profile to unlock job applications
           </p>
         </motion.div>
@@ -400,7 +400,7 @@ export default function TalentProfilePage() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-6 bg-white/5 border border-white/10 rounded"
+            className="mb-8 p-4 sm:p-6 bg-white/5 border border-white/10 rounded"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="text-white text-base font-medium font-body">Profile Completion</span>
@@ -435,7 +435,7 @@ export default function TalentProfilePage() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-5 bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/30 rounded"
+            className="mb-8 p-4 sm:p-5 bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/30 rounded"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -486,7 +486,7 @@ export default function TalentProfilePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="p-6 bg-white/5 border border-white/10 rounded"
+            className="p-4 sm:p-6 bg-white/5 border border-white/10 rounded"
           >
             <h2 className="text-xl font-heading text-white mb-6">Profile Overview</h2>
             
@@ -560,7 +560,7 @@ export default function TalentProfilePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="p-6 bg-white/5 border border-white/10 rounded"
+            className="p-4 sm:p-6 bg-white/5 border border-white/10 rounded"
           >
             <h2 className="text-xl font-heading text-white mb-6">About You</h2>
             
@@ -599,7 +599,7 @@ export default function TalentProfilePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="p-6 bg-white/5 border border-white/10 rounded"
+            className="p-4 sm:p-6 bg-white/5 border border-white/10 rounded"
           >
             <h2 className="text-xl font-heading text-white mb-6">Skills & Role</h2>
             
@@ -679,7 +679,7 @@ export default function TalentProfilePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="p-6 bg-white/5 border border-white/10 rounded"
+            className="p-4 sm:p-6 bg-white/5 border border-white/10 rounded"
           >
             <h2 className="text-xl font-heading text-white mb-6">Portfolio</h2>
             
@@ -755,7 +755,7 @@ export default function TalentProfilePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55 }}
-            className="p-6 bg-white/5 border border-white/10 rounded"
+            className="p-4 sm:p-6 bg-white/5 border border-white/10 rounded"
           >
             <h2 className="text-xl font-heading text-white mb-6">Location</h2>
 
@@ -846,7 +846,7 @@ export default function TalentProfilePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.65 }}
-            className="p-6 bg-white/5 border border-white/10 rounded"
+            className="p-4 sm:p-6 bg-white/5 border border-white/10 rounded"
           >
             <h2 className="text-xl font-heading text-white mb-6">Experience</h2>
             

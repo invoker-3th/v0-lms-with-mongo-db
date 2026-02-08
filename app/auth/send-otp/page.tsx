@@ -18,8 +18,11 @@ function SendOtpContent() {
     const queryEmail = (searchParams.get("email") || "").trim();
     if (queryEmail && queryEmail.includes("@")) {
       setEmail(queryEmail);
+      if (lockedEmail) {
+        setStage("sent");
+      }
     }
-  }, [searchParams]);
+  }, [searchParams, lockedEmail]);
 
   const sendOtp = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -94,12 +97,14 @@ function SendOtpContent() {
       <div className="w-full max-w-md bg-white/5 border border-white/10 rounded p-6">
         <h1 className="text-2xl text-white mb-3">Verify your email (OTP)</h1>
         <p className="text-[var(--text-secondary)] text-sm mb-4">
-          Enter your email to receive a 6-digit OTP.
+          {lockedEmail
+            ? "Enter the 6-digit OTP we sent to your email."
+            : "Enter your email to receive a 6-digit OTP."}
         </p>
 
         {error && <div className="mb-3 text-sm text-red-400">{error}</div>}
 
-        {stage === "enter" ? (
+        {stage === "enter" && !lockedEmail ? (
           <form onSubmit={sendOtp} className="space-y-3">
             <input
               className="w-full p-3 bg-white/5 border border-white/10 rounded text-white"
@@ -143,7 +148,7 @@ function SendOtpContent() {
               </button>
               <button
                 type="button"
-                onClick={() => setStage("enter")}
+                onClick={lockedEmail ? sendOtp : () => setStage("enter")}
                 className="px-4 py-2 border rounded text-white"
               >
                 {lockedEmail ? "Resend OTP" : "Resend / Change Email"}

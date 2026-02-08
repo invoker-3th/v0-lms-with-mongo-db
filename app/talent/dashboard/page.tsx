@@ -251,7 +251,7 @@ export default function TalentDashboard() {
       <TalentSidebar />
 
       {/* Dashboard Container */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-12 w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 pt-12 pb-24 sm:px-6 sm:pt-20 sm:pb-12 w-full">
         {/* Dashboard Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -259,10 +259,10 @@ export default function TalentDashboard() {
           transition={{ duration: 0.3, ease: "easeOut" }}
           className="mb-10"
         >
-          <h1 className="text-3xl md:text-4xl font-heading text-(--text-primary) mb-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading text-(--text-primary) mb-2">
             My Applications
           </h1>
-          <p className="text-sm font-body text-(--text-secondary)">
+          <p className="text-xs sm:text-sm font-body text-(--text-secondary)">
             Track the status of roles you've applied for.
           </p>
         </motion.div>
@@ -331,7 +331,7 @@ export default function TalentDashboard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05, duration: 0.3, ease: "easeOut" }}
-                className="bg-[var(--bg-surface)] border border-white/8 rounded-xl p-5 hover:bg-[var(--bg-surface)]/80 transition-colors"
+                className="bg-[var(--bg-surface)] border border-white/8 rounded-xl p-4 sm:p-5 hover:bg-[var(--bg-surface)]/80 transition-colors"
               >
                 {/* Top Row: Job Title + Status Badge */}
                 <div className="flex items-center justify-between mb-3">

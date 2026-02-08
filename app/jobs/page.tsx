@@ -199,7 +199,7 @@ export default function JobsListingPage() {
 
       <TalentSidebar />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pb-12 w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pb-24 sm:pb-12 w-full">
         {/* Page Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -222,7 +222,7 @@ export default function JobsListingPage() {
             <p className="text-xs tracking-[0.3em] text-[var(--accent-gold)] mb-3">
               CASTING OPPORTUNITIES
             </p>
-            <h1 className="text-4xl md:text-5xl text-white mb-3 font-heading">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl text-white mb-3 font-heading">
               Open Casting Calls
             </h1>
             {isTalent && !paymentConfirmed && (
