@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { ZodError } from "zod"
 import { getDB } from "@/lib/db"
 import { enrollmentCreateSchema } from "@/lib/validation"
 
@@ -66,8 +67,17 @@ export async function POST(request: NextRequest) {
       enrolledAt: new Date(),
     })
 
+    const user = await db.findUserById(userId)
+    if (user) {
+      const updatedCourses = Array.from(new Set([...(user.enrolledCourses || []), courseId]))
+      await db.updateUser(userId, { enrolledCourses: updatedCourses })
+    }
+
     return NextResponse.json({ enrollment }, { status: 201 })
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     console.error("Create enrollment error:", error)
     return NextResponse.json({ error: "Failed to create enrollment" }, { status: 500 })
   }

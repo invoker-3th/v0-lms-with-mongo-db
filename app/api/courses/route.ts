@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { ZodError } from "zod"
 import { getDB } from "@/lib/db"
 import { courseCreateSchema } from "@/lib/validation"
 
@@ -12,9 +13,14 @@ export async function GET(request: NextRequest) {
     const includeDrafts = searchParams.get("includeDrafts") === "true"
 
     const db = getDB()
-    let courses = instructorId
-      ? await db.getCoursesByInstructor(instructorId)
-      : await db.getAllCourses()
+    let courses = []
+    if (instructorId) {
+      courses = await db.getCoursesByInstructor(instructorId)
+    } else if (includeDrafts && typeof db.getAllCoursesIncludingDrafts === "function") {
+      courses = await db.getAllCoursesIncludingDrafts()
+    } else {
+      courses = await db.getAllCourses()
+    }
 
     if (!includeDrafts) {
       courses = courses.filter((c) => c.published)
@@ -80,10 +86,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ course }, { status: 201 })
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     console.error("Create course error:", error)
-    return NextResponse.json(
-      { error: "Failed to create course" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Failed to create course" }, { status: 500 })
   }
 }

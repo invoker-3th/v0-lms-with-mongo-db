@@ -21,7 +21,7 @@ export default function AuthLayout({
         <footer className="border-t py-6">
           <div className="container text-center text-sm text-muted-foreground">
             <p>
-              &copy; {new Date().getFullYear()} LearnHub. All rights reserved.{" "}
+              &copy; {new Date().getFullYear()} PromptCare Academy. All rights reserved.{" "}
               <Link href="/privacy" className="hover:text-foreground">
                 Privacy
               </Link>{" "}
@@ -36,3 +36,4 @@ export default function AuthLayout({
     </>
   )
 }
+

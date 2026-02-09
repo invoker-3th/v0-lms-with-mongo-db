@@ -267,6 +267,7 @@ export const mockPayments: Payment[] = [
     id: "payment-1",
     userId: "user-1",
     courseId: "course-1",
+    courseIds: ["course-1"],
     amount: 99,
     currency: "USD",
     status: "completed",
@@ -279,6 +280,7 @@ export const mockPayments: Payment[] = [
     id: "payment-2",
     userId: "user-1",
     courseId: "course-2",
+    courseIds: ["course-2"],
     amount: 79,
     currency: "USD",
     status: "completed",
@@ -384,6 +386,10 @@ class MockDatabase {
   // Course methods
   async getAllCourses(): Promise<Course[]> {
     return this.courses.filter((c) => c.published)
+  }
+
+  async getAllCoursesIncludingDrafts(): Promise<Course[]> {
+    return this.courses
   }
 
   async getCourseById(id: string): Promise<Course | undefined> {

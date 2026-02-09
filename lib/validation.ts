@@ -75,3 +75,10 @@ export const profileUpdateSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   bio: z.string().optional(),
 })
+
+export const userUpdateSchema = z.object({
+  name: z.string().min(2).optional(),
+  bio: z.string().optional(),
+  avatar: z.string().optional(),
+  status: z.enum(["active", "suspended"]).optional(),
+})

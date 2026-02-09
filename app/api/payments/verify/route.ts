@@ -34,16 +34,28 @@ export async function GET(request: NextRequest) {
       })
 
       // Auto-enroll user in course if not already enrolled
-      const enrollment = await db.getEnrollment(payment.userId, payment.courseId)
-      if (!enrollment) {
-        await db.createEnrollment({
-          userId: payment.userId,
-          courseId: payment.courseId,
-          progress: 0,
-          completedLessons: [],
-          status: "active",
-          enrolledAt: new Date(),
-        })
+      const courseIds = payment.courseIds && payment.courseIds.length > 0
+        ? payment.courseIds
+        : [payment.courseId]
+
+      for (const courseId of courseIds) {
+        const enrollment = await db.getEnrollment(payment.userId, courseId)
+        if (!enrollment) {
+          await db.createEnrollment({
+            userId: payment.userId,
+            courseId,
+            progress: 0,
+            completedLessons: [],
+            status: "active",
+            enrolledAt: new Date(),
+          })
+        }
+      }
+
+      const user = await db.findUserById(payment.userId)
+      if (user) {
+        const updatedCourses = Array.from(new Set([...(user.enrolledCourses || []), ...courseIds]))
+        await db.updateUser(payment.userId, { enrolledCourses: updatedCourses })
       }
     } else {
       await db.updatePaymentByReference(reference, {

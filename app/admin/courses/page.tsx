@@ -107,6 +107,12 @@ export default function AdminCoursesPage() {
                     </>
                   )}
                 </Button>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/admin/courses/${course.id}/content`}>
+                    <Eye className="h-4 w-4 mr-1" />
+                    Edit Content
+                  </Link>
+                </Button>
                 <Button
                   variant="destructive"
                   size="sm"

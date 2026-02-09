@@ -13,7 +13,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Loader2, AlertCircle } from "lucide-react"
-import { authService } from "@/lib/auth"
 import { useAuthStore } from "@/lib/store"
 import { loginSchema } from "@/lib/validation"
 import { useToast } from "@/hooks/use-toast"
@@ -44,10 +43,15 @@ export default function LoginPage() {
       })
 
       // Attempt login
-      const result = await authService.login(validated.email, validated.password)
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(validated),
+      })
+      const result = await res.json()
 
-      if (!result) {
-        setError("Invalid email or password")
+      if (!res.ok || !result?.user) {
+        setError(result?.error || "Invalid email or password")
         setLoading(false)
         return
       }

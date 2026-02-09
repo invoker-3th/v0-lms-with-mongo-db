@@ -1,4 +1,4 @@
-# LearnHub LMS - START HERE 🚀
+# PromptCare Academy LMS - START HERE 🚀
 
 ## Welcome! Your Learning Management System is Ready
 
@@ -398,3 +398,4 @@ You have a professional Learning Management System that rivals platforms like Ud
 Then read: **QUICKSTART.md**
 
 You'll be testing the full system in 5 minutes.
+

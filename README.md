@@ -1,4 +1,4 @@
-# LearnHub - Complete Learning Management System
+# PromptCare Academy - Complete Learning Management System
 
 A fully functional, production-ready Learning Management System (LMS) built with Next.js, TypeScript, and modern web technologies. This platform supports course management, student enrollment, payment processing, and comprehensive admin tools.
 
@@ -201,7 +201,7 @@ Replace mock database with MongoDB:
 import { MongoClient } from 'mongodb';
 
 const client = new MongoClient(process.env.MONGODB_URI!);
-export const db = client.db('learnhub');
+export const db = client.db('PromptCare Academy');
 \`\`\`
 
 ### 2. Paystack Integration
@@ -285,7 +285,7 @@ See [SPRINT_TICKETS.md](./SPRINT_TICKETS.md) for the complete development breakd
 
 For issues or questions:
 - Check the [FAQ page](/faq)
-- Contact support at support@learnhub.com
+- Contact support at support@PromptCare Academy.com
 - Open a GitHub issue
 
 ## License
@@ -307,3 +307,4 @@ Configure environment variables in Vercel dashboard.
 
 Built with ❤️ using Next.js and modern web technologies.
 \`\`\`
+

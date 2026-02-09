@@ -1,4 +1,4 @@
-# LearnHub LMS - Complete Documentation Index
+# PromptCare Academy LMS - Complete Documentation Index
 
 ## 📖 Documentation Files Overview
 
@@ -462,3 +462,4 @@ This documentation covers:
 
 Last Updated: 2025-01-30  
 Documentation Status: ✅ Complete
+

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { ZodError } from "zod"
 import { paystackService } from "@/lib/paystack"
 import { getDB } from "@/lib/db"
 import { paymentInitializeSchema } from "@/lib/validation"
@@ -29,6 +30,7 @@ export async function POST(request: NextRequest) {
     const payment = await db.createPayment({
       userId,
       courseId: Array.isArray(courseIds) ? courseIds[0] : courseIds,
+      courseIds: Array.isArray(courseIds) ? courseIds : [courseIds],
       amount,
       currency: currency as "NGN" | "USD" | "GBP",
       status: "pending",
@@ -43,6 +45,9 @@ export async function POST(request: NextRequest) {
       authorization_url: paymentInit.authorizationUrl,
     })
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     console.error("Payment initialization error:", error)
     return NextResponse.json({ error: "Failed to initialize payment" }, { status: 500 })
   }

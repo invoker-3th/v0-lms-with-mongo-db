@@ -14,7 +14,7 @@ export default function CheckoutSuccessPage() {
   const router = useRouter()
   const reference = searchParams.get("reference")
   const [payment, setPayment] = useState<Payment | null>(null)
-  const [courseTitle, setCourseTitle] = useState<string>("")
+  const [courses, setCourses] = useState<{ id: string; title: string; thumbnail?: string }[]>([])
 
   useEffect(() => {
     if (!reference) {
@@ -29,12 +29,31 @@ export default function CheckoutSuccessPage() {
         const foundPayment = data.payments?.[0] || null
         setPayment(foundPayment)
 
-        if (foundPayment?.courseId) {
-          const courseRes = await fetch(`/api/courses/${foundPayment.courseId}`)
-          if (courseRes.ok) {
-            const courseData = await courseRes.json()
-            setCourseTitle(courseData.course?.title || foundPayment.courseId)
-          }
+        const ids =
+          foundPayment?.courseIds && foundPayment.courseIds.length > 0
+            ? foundPayment.courseIds
+            : foundPayment?.courseId
+            ? [foundPayment.courseId]
+            : []
+
+        if (ids.length > 0) {
+          const courseResponses = await Promise.all(
+            ids.map((id: string) => fetch(`/api/courses/${id}`))
+          )
+          const courseData = await Promise.all(
+            courseResponses.map(async (res, index) => {
+              if (!res.ok) {
+                return { id: ids[index], title: ids[index] }
+              }
+              const data = await res.json()
+              return {
+                id: data.course?.id || ids[index],
+                title: data.course?.title || ids[index],
+                thumbnail: data.course?.thumbnail,
+              }
+            })
+          )
+          setCourses(courseData)
         }
       } catch (error) {
         console.error("Failed to load payment:", error)
@@ -91,14 +110,27 @@ export default function CheckoutSuccessPage() {
           <div className="mb-8 text-left">
             <h3 className="font-semibold mb-3">Enrolled Courses:</h3>
             <div className="space-y-2">
-            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-              <img
-                src="/placeholder.svg"
-                alt={courseTitle || "Course"}
-                className="w-16 h-12 object-cover rounded"
-              />
-              <span className="font-medium">{courseTitle || payment.courseId}</span>
-            </div>
+              {courses.length > 0 ? (
+                courses.map((course) => (
+                  <div key={course.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                    <img
+                      src={course.thumbnail || "/placeholder.svg"}
+                      alt={course.title}
+                      className="w-16 h-12 object-cover rounded"
+                    />
+                    <span className="font-medium">{course.title}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                  <img
+                    src="/placeholder.svg"
+                    alt="Course"
+                    className="w-16 h-12 object-cover rounded"
+                  />
+                  <span className="font-medium">{payment.courseId}</span>
+                </div>
+              )}
             </div>
           </div>
 

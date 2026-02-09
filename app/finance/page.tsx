@@ -27,12 +27,10 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from "lucide-react"
-import { useAuthStore } from "@/lib/store"
 import type { Payment } from "@/lib/types"
 import Link from "next/link"
 
 export default function FinanceDashboard() {
-  const { user } = useAuthStore()
   const [payments, setPayments] = useState<Payment[]>([])
   const [filteredPayments, setFilteredPayments] = useState<Payment[]>([])
   const [searchQuery, setSearchQuery] = useState("")

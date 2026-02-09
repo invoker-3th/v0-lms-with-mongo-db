@@ -20,7 +20,6 @@ import {
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Loader2, AlertCircle, CheckCircle2, User, GraduationCap, Shield, DollarSign, Info } from "lucide-react"
-import { authService } from "@/lib/auth"
 import { useAuthStore } from "@/lib/store"
 import { registerSchema } from "@/lib/validation"
 import { useToast } from "@/hooks/use-toast"
@@ -69,12 +68,19 @@ export default function RegisterPage() {
       const validated = registerSchema.parse(formData)
 
       // Attempt registration with role
-      const result = await authService.register(
-        validated.email,
-        validated.password,
-        validated.name,
-        formData.role
-      )
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...validated,
+          role: formData.role,
+        }),
+      })
+      const result = await res.json()
+
+      if (!res.ok || !result?.user) {
+        throw new Error(result?.error || "Registration failed")
+      }
 
       // Set auth state
       setAuth(result.user, result.token)

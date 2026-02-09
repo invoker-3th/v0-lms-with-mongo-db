@@ -63,6 +63,7 @@ export interface Lesson {
     articleContent?: string
     quizId?: string
     assignmentId?: string
+    resources?: { title: string; url: string }[]
   }
   isFree: boolean
 }
@@ -110,6 +111,7 @@ export interface Payment {
   id: string
   userId: string
   courseId: string
+  courseIds?: string[]
   amount: number
   currency: Currency
   status: PaymentStatus

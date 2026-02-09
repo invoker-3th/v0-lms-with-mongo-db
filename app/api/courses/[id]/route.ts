@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { ZodError } from "zod"
 import { getDB } from "@/lib/db"
 import { courseUpdateSchema } from "@/lib/validation"
 
@@ -35,6 +36,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json({ course: updated })
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     console.error("Update course error:", error)
     return NextResponse.json({ error: "Failed to update course" }, { status: 500 })
   }

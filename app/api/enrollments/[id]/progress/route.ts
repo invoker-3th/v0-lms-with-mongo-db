@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { ZodError } from "zod"
 import { getDB } from "@/lib/db"
 import { enrollmentProgressSchema } from "@/lib/validation"
 
@@ -26,6 +27,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     return NextResponse.json({ enrollment: updated })
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     console.error("Update progress error:", error)
     return NextResponse.json({ error: "Failed to update progress" }, { status: 500 })
   }

@@ -56,7 +56,10 @@ export default function PaymentsPage() {
       {payments.length > 0 ? (
         <div className="space-y-4">
           {payments.map((payment) => {
-            const courseTitle = courseTitles[payment.courseId] || payment.courseId
+            const hasMultiple = payment.courseIds && payment.courseIds.length > 1
+            const courseTitle = hasMultiple
+              ? `Multiple courses (${payment.courseIds?.length})`
+              : courseTitles[payment.courseId] || payment.courseId
             return (
               <Card key={payment.id}>
                 <CardContent className="p-6">

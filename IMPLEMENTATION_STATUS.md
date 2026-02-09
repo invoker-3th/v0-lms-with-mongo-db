@@ -1,4 +1,4 @@
-# LearnHub LMS - Implementation Status
+# PromptCare Academy LMS - Implementation Status
 
 ## Overview
 A fully functional, production-ready Learning Management System built with Next.js, TypeScript, Tailwind CSS, and Framer Motion. The system includes complete student and admin workflows with mock authentication and Paystack payment integration.
@@ -367,3 +367,4 @@ This LMS is production-ready for the core features implemented. To extend:
 ## 📄 License
 
 Built with v0 - Production-ready LMS template.
+

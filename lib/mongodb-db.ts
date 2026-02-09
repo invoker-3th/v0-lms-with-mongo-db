@@ -100,7 +100,7 @@ export class MongoDBDatabase {
       { $set: { ...updates, updatedAt: new Date() } },
       { returnDocument: 'after' }
     )
-    return result ? toObject<User>(result) : undefined
+    return result?.value ? toObject<User>(result.value) : undefined
   }
 
   async getAllUsers(): Promise<User[]> {
@@ -113,6 +113,12 @@ export class MongoDBDatabase {
   async getAllCourses(): Promise<Course[]> {
     const collection = await getCollection<Course>('courses')
     const docs = await collection.find({ published: true }).toArray()
+    return docs.map(toObject<Course>)
+  }
+
+  async getAllCoursesIncludingDrafts(): Promise<Course[]> {
+    const collection = await getCollection<Course>('courses')
+    const docs = await collection.find({}).toArray()
     return docs.map(toObject<Course>)
   }
 
@@ -158,7 +164,7 @@ export class MongoDBDatabase {
       { $set: { ...updates, updatedAt: new Date() } },
       { returnDocument: 'after' }
     )
-    return result ? toObject<Course>(result) : undefined
+    return result?.value ? toObject<Course>(result.value) : undefined
   }
 
   async deleteCourse(id: string): Promise<boolean> {
@@ -187,8 +193,8 @@ export class MongoDBDatabase {
     if (ObjectId.isValid(id)) {
       doc = await collection.findOne({ _id: new ObjectId(id) })
     } else {
-      // Try finding by id field or by string id
-      doc = await collection.findOne({ $or: [{ id }, { _id: new ObjectId(id) }] })
+      // Try finding by id field
+      doc = await collection.findOne({ id })
     }
     return doc ? toObject<Enrollment>(doc) : undefined
   }
@@ -211,7 +217,7 @@ export class MongoDBDatabase {
       { $set: updates },
       { returnDocument: 'after' }
     )
-    return result ? toObject<Enrollment>(result) : undefined
+    return result?.value ? toObject<Enrollment>(result.value) : undefined
   }
 
   async getAllEnrollments(): Promise<Enrollment[]> {
@@ -262,7 +268,7 @@ export class MongoDBDatabase {
       { $set: updates },
       { returnDocument: 'after' }
     )
-    return result ? toObject<Payment>(result) : undefined
+    return result?.value ? toObject<Payment>(result.value) : undefined
   }
 
   async updatePaymentByReference(reference: string, updates: Partial<Payment>): Promise<Payment | undefined> {
@@ -272,7 +278,7 @@ export class MongoDBDatabase {
       { $set: updates },
       { returnDocument: 'after' }
     )
-    return result ? toObject<Payment>(result) : undefined
+    return result?.value ? toObject<Payment>(result.value) : undefined
   }
 
   async getAllPayments(): Promise<Payment[]> {
@@ -341,4 +347,3 @@ export function getDatabase(): MongoDBDatabase {
 
 // Export as db for backward compatibility
 export const db = getDatabase()
-

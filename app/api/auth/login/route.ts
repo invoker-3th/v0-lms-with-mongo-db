@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { authService } from "@/lib/auth"
 import { loginSchema } from "@/lib/validation"
+import { ZodError } from "zod"
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +23,9 @@ export async function POST(request: Request) {
       token: result.token,
     })
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     return NextResponse.json({ error: "Invalid request" }, { status: 400 })
   }
 }

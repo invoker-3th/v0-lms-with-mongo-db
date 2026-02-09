@@ -8,6 +8,8 @@ export async function GET(request: NextRequest) {
     const reference = searchParams.get("reference")
     const status = searchParams.get("status")
     const currency = searchParams.get("currency")
+    const courseId = searchParams.get("courseId")
+    const courseIds = searchParams.get("courseIds")
 
     const db = getDB()
     let payments = reference
@@ -24,6 +26,15 @@ export async function GET(request: NextRequest) {
 
     if (currency) {
       payments = payments.filter((p) => p.currency === currency)
+    }
+
+    if (courseId || courseIds) {
+      const ids = courseIds ? courseIds.split(",") : [courseId as string]
+      payments = payments.filter((p) => {
+        if (ids.includes(p.courseId)) return true
+        if (p.courseIds && p.courseIds.some((id) => ids.includes(id))) return true
+        return false
+      })
     }
 
     return NextResponse.json({ payments })
