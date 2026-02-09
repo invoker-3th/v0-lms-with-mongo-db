@@ -14,8 +14,8 @@ export const metadata: Metadata = {
     "Transform your career with PromptCare Academy. Learn web development, UI/UX design, digital marketing, data analytics and more from industry experts. Join 10,000+ students today.",
   generator: "v0.app",
   icons: {
-    icon: "/logo-icon.png",
-    apple: "/logo-icon.png",
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
   },
   openGraph: {
     title: "PromptCare Academy - Premium Online Learning",
