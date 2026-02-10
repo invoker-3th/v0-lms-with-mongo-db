@@ -15,7 +15,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!user) {
-      router.push("/login")
+      router.push("/login-admin")
     } else if (user.role !== "admin") {
       router.push("/dashboard")
     }
@@ -48,7 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Logo */}
           <div className="flex h-16 items-center border-b px-6">
             <BookOpen className="h-6 w-6 text-primary" />
-            <span className="ml-2 text-lg font-bold">LMS Admin</span>
+            <span className="ml-2 text-lg font-bold">PromptCare Admin</span>
           </div>
 
           {/* Navigation */}

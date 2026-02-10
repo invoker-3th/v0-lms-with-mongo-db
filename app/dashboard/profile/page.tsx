@@ -12,7 +12,7 @@ import { Save, UserIcon } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 export default function ProfilePage() {
-  const { user } = useAuthStore()
+  const { user, token } = useAuthStore()
   const { toast } = useToast()
   const [profile, setProfile] = useState({
     name: user?.name || "",
@@ -25,6 +25,53 @@ export default function ProfilePage() {
       title: "Profile updated",
       description: "Your profile has been updated successfully.",
     })
+  }
+
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
+
+  const handlePasswordUpdate = async () => {
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast({
+        title: "Password mismatch",
+        description: "New passwords do not match.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const res = await fetch("/api/users/password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token || ""}`,
+        },
+        body: JSON.stringify({
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update password")
+      }
+
+      toast({
+        title: "Password updated",
+        description: "Your password was updated successfully.",
+      })
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" })
+    } catch (error: any) {
+      toast({
+        title: "Update failed",
+        description: error.message || "Failed to update password",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -96,20 +143,39 @@ export default function ProfilePage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="current-password">Current Password</Label>
-                <Input id="current-password" type="password" />
+                <Input
+                  id="current-password"
+                  type="password"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) =>
+                    setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+                  }
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="new-password">New Password</Label>
-                <Input id="new-password" type="password" />
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="confirm-password">Confirm New Password</Label>
-                <Input id="confirm-password" type="password" />
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) =>
+                    setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+                  }
+                />
               </div>
 
-              <Button onClick={handleSave} className="w-full">
+              <Button onClick={handlePasswordUpdate} className="w-full">
                 Update Password
               </Button>
             </CardContent>

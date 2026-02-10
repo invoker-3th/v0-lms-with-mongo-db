@@ -1,5 +1,5 @@
 // Mock database with seeded data
-import type { User, Course, Enrollment, Payment, Certificate, Quiz, Assignment } from "./types"
+import type { User, Course, Enrollment, Payment, Certificate, Quiz, Assignment, AdminLog } from "./types"
 
 // Seeded Users
 export const mockUsers: User[] = [
@@ -350,6 +350,7 @@ class MockDatabase {
   certificates: Certificate[] = [...mockCertificates]
   quizzes: Quiz[] = [...mockQuizzes]
   assignments: Assignment[] = [...mockAssignments]
+  adminLogs: AdminLog[] = []
 
   // User methods
   async findUserByEmail(email: string): Promise<User | undefined> {
@@ -362,6 +363,20 @@ class MockDatabase {
 
   async getAllUsers(): Promise<User[]> {
     return this.users
+  }
+
+  async createAdminLog(log: Omit<AdminLog, "id" | "createdAt">): Promise<AdminLog> {
+    const newLog: AdminLog = {
+      ...log,
+      id: `admin-log-${Date.now()}`,
+      createdAt: new Date(),
+    }
+    this.adminLogs.unshift(newLog)
+    return newLog
+  }
+
+  async getAdminLogs(limit = 50): Promise<AdminLog[]> {
+    return this.adminLogs.slice(0, limit)
   }
 
   async createUser(user: Omit<User, "id" | "createdAt" | "updatedAt">): Promise<User> {

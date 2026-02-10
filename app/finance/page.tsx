@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   Select,
   SelectContent,
@@ -25,12 +27,15 @@ import {
   Clock,
   XCircle,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  LockKeyhole
 } from "lucide-react"
 import type { Payment } from "@/lib/types"
 import Link from "next/link"
+import { useAuthStore } from "@/lib/store"
 
 export default function FinanceDashboard() {
+  const { token } = useAuthStore()
   const [payments, setPayments] = useState<Payment[]>([])
   const [filteredPayments, setFilteredPayments] = useState<Payment[]>([])
   const [searchQuery, setSearchQuery] = useState("")
@@ -47,6 +52,14 @@ export default function FinanceDashboard() {
     todayRevenue: 0,
     monthlyRevenue: 0,
   })
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
+  const [passwordLoading, setPasswordLoading] = useState(false)
+  const [passwordError, setPasswordError] = useState("")
+  const [passwordSuccess, setPasswordSuccess] = useState("")
 
   useEffect(() => {
     loadPayments()
@@ -157,6 +170,39 @@ export default function FinanceDashboard() {
     })
 
     setFilteredPayments(filtered)
+  }
+
+  const handlePasswordUpdate = async () => {
+    setPasswordError("")
+    setPasswordSuccess("")
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError("New passwords do not match.")
+      return
+    }
+    setPasswordLoading(true)
+    try {
+      const res = await fetch("/api/users/password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token || ""}`,
+        },
+        body: JSON.stringify({
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update password")
+      }
+      setPasswordSuccess("Password updated successfully.")
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" })
+    } catch (err: any) {
+      setPasswordError(err.message || "Failed to update password")
+    } finally {
+      setPasswordLoading(false)
+    }
   }
 
   const getStatusIcon = (status: string) => {
@@ -439,6 +485,65 @@ export default function FinanceDashboard() {
           )}
         </CardContent>
       </Card>
+
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <LockKeyhole className="h-4 w-4" />
+              Change Password
+            </CardTitle>
+            <CardDescription>Update your finance account password</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {passwordError && (
+              <Alert variant="destructive">
+                <AlertDescription>{passwordError}</AlertDescription>
+              </Alert>
+            )}
+            {passwordSuccess && (
+              <Alert>
+                <AlertDescription>{passwordSuccess}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="finance-current-password">Current Password</Label>
+              <Input
+                id="finance-current-password"
+                type="password"
+                value={passwordForm.currentPassword}
+                onChange={(e) =>
+                  setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="finance-new-password">New Password</Label>
+              <Input
+                id="finance-new-password"
+                type="password"
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="finance-confirm-password">Confirm New Password</Label>
+              <Input
+                id="finance-confirm-password"
+                type="password"
+                value={passwordForm.confirmPassword}
+                onChange={(e) =>
+                  setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+                }
+              />
+            </div>
+            <Button onClick={handlePasswordUpdate} className="w-full" disabled={passwordLoading}>
+              {passwordLoading ? "Updating..." : "Update Password"}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

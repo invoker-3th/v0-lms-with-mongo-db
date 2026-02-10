@@ -15,6 +15,8 @@ export interface SessionData {
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production"
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d"
 const OTP_EXPIRES_MINUTES = Number(process.env.OTP_EXPIRES_MINUTES || 15)
+const BOOTSTRAP_ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL
+const BOOTSTRAP_ADMIN_PASSWORD = process.env.BOOTSTRAP_ADMIN_PASSWORD
 
 // Password hashing utility
 async function hashPassword(password: string): Promise<string> {
@@ -58,29 +60,55 @@ function verifyToken(token: string): SessionData | null {
   }
 }
 
+async function validateUserPassword(user: User, password: string): Promise<boolean> {
+  const isHashed = user.password.startsWith("$2a$") || user.password.startsWith("$2b$")
+  if (isHashed) {
+    return verifyPassword(password, user.password)
+  }
+  return user.password === password
+}
+
 export const authService = {
   async login(email: string, password: string): Promise<{ user: User; token: string } | null> {
     const db = getDB()
     const user = await db.findUserByEmail(email)
 
     if (!user) {
+      if (BOOTSTRAP_ADMIN_EMAIL && BOOTSTRAP_ADMIN_PASSWORD) {
+        if (email === BOOTSTRAP_ADMIN_EMAIL && password === BOOTSTRAP_ADMIN_PASSWORD) {
+          const created = await db.createUser({
+            email,
+            password: await hashPassword(password),
+            name: "Bootstrap Admin",
+            role: "admin",
+            status: "active",
+            emailVerified: true,
+            enrolledCourses: [],
+          })
+          const token = generateToken(created)
+          const { password: _, ...userWithoutPassword } = created
+          return { user: userWithoutPassword as User, token }
+        }
+      }
       return null
     }
 
-    // Check if password is hashed (starts with $2a$ or $2b$) or plain text (for migration)
-    const isHashed = user.password.startsWith("$2a$") || user.password.startsWith("$2b$")
-    
-    let passwordValid = false
-    if (isHashed) {
-      passwordValid = await verifyPassword(password, user.password)
-    } else {
-      // Legacy: compare plain text (for existing users)
-      passwordValid = user.password === password
-      // If valid, hash the password for future use
-      if (passwordValid) {
-        const hashedPassword = await hashPassword(password)
-        await db.updateUser(user.id, { password: hashedPassword })
-      }
+    // Allow bootstrap admin to bypass OTP check if matches env creds
+    if (
+      BOOTSTRAP_ADMIN_EMAIL &&
+      BOOTSTRAP_ADMIN_PASSWORD &&
+      email === BOOTSTRAP_ADMIN_EMAIL &&
+      password === BOOTSTRAP_ADMIN_PASSWORD
+    ) {
+      const token = generateToken(user)
+      const { password: _, ...userWithoutPassword } = user
+      return { user: userWithoutPassword as User, token }
+    }
+
+    let passwordValid = await validateUserPassword(user, password)
+    if (passwordValid && !(user.password.startsWith("$2a$") || user.password.startsWith("$2b$"))) {
+      const hashedPassword = await hashPassword(password)
+      await db.updateUser(user.id, { password: hashedPassword })
     }
 
     if (!passwordValid) {
@@ -121,6 +149,7 @@ export const authService = {
       password: hashedPassword,
       name,
       role,
+      status: "active",
       emailVerified: true,
       enrolledCourses: [],
     })
@@ -214,6 +243,23 @@ export const authService = {
     await db.updateUser(user.id, { otpHash, otpExpiresAt })
     await sendOtpEmail({ to: email, name: user.name, otp })
 
+    return true
+  },
+
+  async updatePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<boolean> {
+    const db = getDB()
+    const user = await db.findUserById(userId)
+    if (!user) return false
+
+    const isValid = await validateUserPassword(user, currentPassword)
+    if (!isValid) return false
+
+    const hashedPassword = await hashPassword(newPassword)
+    await db.updateUser(userId, { password: hashedPassword })
     return true
   },
 

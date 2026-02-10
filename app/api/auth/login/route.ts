@@ -17,6 +17,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid credentials or email not verified" }, { status: 401 })
     }
 
+    const isAdminLogin = request.headers.get("x-admin-login") === "true"
+    if (result.user.role === "admin" && !isAdminLogin) {
+      return NextResponse.json({ error: "Admins must use /login-admin" }, { status: 403 })
+    }
+    if (result.user.role !== "admin" && isAdminLogin) {
+      return NextResponse.json({ error: "Only admins can use /login-admin" }, { status: 403 })
+    }
+
     return NextResponse.json({
       success: true,
       user: result.user,

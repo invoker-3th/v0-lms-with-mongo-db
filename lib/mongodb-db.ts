@@ -10,6 +10,7 @@ import type {
   Certificate,
   Quiz,
   Assignment,
+  AdminLog,
 } from './types'
 import { ObjectId } from 'mongodb'
 
@@ -110,6 +111,23 @@ export class MongoDBDatabase {
     const collection = await getCollection<User>('users')
     const docs = await collection.find({}).toArray()
     return docs.map(toObject<User>)
+  }
+
+  // Admin log methods
+  async createAdminLog(log: Omit<AdminLog, 'id' | 'createdAt'>): Promise<AdminLog> {
+    const collection = await getCollection<AdminLog>('admin_logs')
+    const newLog: Omit<AdminLog, 'id'> = {
+      ...log,
+      createdAt: new Date(),
+    }
+    const result = await collection.insertOne(toDocument(newLog as AdminLog))
+    return { ...newLog, id: result.insertedId.toString() } as AdminLog
+  }
+
+  async getAdminLogs(limit = 50): Promise<AdminLog[]> {
+    const collection = await getCollection<AdminLog>('admin_logs')
+    const docs = await collection.find({}).sort({ createdAt: -1 }).limit(limit).toArray()
+    return docs.map(toObject<AdminLog>)
   }
 
   // Course methods

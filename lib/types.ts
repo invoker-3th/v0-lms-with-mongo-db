@@ -137,3 +137,16 @@ export interface CartItem {
   courseId: string
   course: Course
 }
+
+export interface AdminLog {
+  id: string
+  actorId: string
+  actorName: string
+  actorEmail: string
+  action: "create_user" | "update_password" | "other"
+  targetUserId?: string
+  targetName?: string
+  targetEmail?: string
+  targetRole?: UserRole
+  createdAt: Date
+}

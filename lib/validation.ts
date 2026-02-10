@@ -80,6 +80,18 @@ export const otpResendSchema = z.object({
   email: z.string().email(),
 })
 
+export const adminCreateUserSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(2),
+  role: z.enum(["admin", "finance"]),
+  password: z.string().min(6),
+})
+
+export const passwordChangeSchema = z.object({
+  currentPassword: z.string().min(6),
+  newPassword: z.string().min(6),
+})
+
 export const profileUpdateSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   bio: z.string().optional(),
