@@ -26,7 +26,7 @@ export default function CheckoutSuccessPage() {
       try {
         const res = await fetch(`/api/payments?reference=${reference}`)
         const data = await res.json()
-        const foundPayment = data.payments?.[0] || null
+        let foundPayment = data.payments?.[0] || null
         setPayment(foundPayment)
 
         if (foundPayment && foundPayment.status !== "completed") {

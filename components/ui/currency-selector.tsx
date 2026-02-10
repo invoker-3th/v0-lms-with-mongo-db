@@ -1,7 +1,7 @@
 'use client'
 
 import { usePreferencesStore } from '@/lib/store'
-import { currencyConfig } from '@/lib/paystack'
+import { currencyConfig } from '@/lib/currency'
 import {
   Select,
   SelectContent,

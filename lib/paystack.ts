@@ -1,6 +1,7 @@
 import "server-only"
 import crypto from "crypto"
 import type { Currency } from "./types"
+import { currencyConfig } from "./currency"
 
 export interface PaymentInitialization {
   reference: string
@@ -22,15 +23,15 @@ export interface PaymentVerification {
 const PAYSTACK_BASE_URL = process.env.PAYSTACK_BASE_URL || "https://api.paystack.co"
 
 const currencyDecimals: Record<Currency, number> = {
-  NGN: 2,
-  USD: 2,
-  GBP: 2,
+  NGN: currencyConfig.NGN.decimals,
+  USD: currencyConfig.USD.decimals,
+  GBP: currencyConfig.GBP.decimals,
 }
 
 const currencySymbols: Record<Currency, string> = {
-  NGN: "₦",
-  USD: "$",
-  GBP: "£",
+  NGN: currencyConfig.NGN.symbol,
+  USD: currencyConfig.USD.symbol,
+  GBP: currencyConfig.GBP.symbol,
 }
 
 function getSecretKey() {

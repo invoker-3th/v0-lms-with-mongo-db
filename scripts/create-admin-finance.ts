@@ -1,4 +1,3 @@
-import "dotenv/config"
 import bcrypt from "bcryptjs"
 import { MongoClient } from "mongodb"
 
@@ -6,6 +5,9 @@ type Role = "admin" | "finance"
 
 const uri = process.env.MONGODB_URI
 const dbName = process.env.MONGODB_DB || "learnhub"
+
+const DEFAULT_ADMIN_EMAIL = "spacecontactme0@gmail.com"
+const DEFAULT_ADMIN_PASSWORD = "admin1@4567"
 
 if (!uri) {
   throw new Error("MONGODB_URI is required")
@@ -19,8 +21,8 @@ function parseArg(name: string) {
 
 async function main() {
   const role = parseArg("--role") as Role | undefined
-  const email = parseArg("--email")
-  const password = parseArg("--password")
+  const email = parseArg("--email") || (role === "admin" ? DEFAULT_ADMIN_EMAIL : undefined)
+  const password = parseArg("--password") || (role === "admin" ? DEFAULT_ADMIN_PASSWORD : undefined)
   const name = parseArg("--name") || (role === "finance" ? "Finance User" : "Admin User")
 
   if (!role || (role !== "admin" && role !== "finance")) {
