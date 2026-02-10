@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import ApplicationDetailModal from "./components/application-detail-modal";
 import MessageThreadModal from "./components/message-thread-modal";
 import TalentSidebar from "@/app/components/talent-sidebar";
+import { usePaymentNavigation } from "@/lib/use-payment-navigation";
 
 function ProfileCompletionCard() {
   const [completion, setCompletion] = useState<{
@@ -141,6 +142,7 @@ export default function TalentDashboard() {
     profileCompletion: 0,
     loading: true,
   });
+  const { goToPayment, loading: paymentLoading } = usePaymentNavigation();
   
   const emailVerified = session?.user ? ((session.user as any)?.emailVerified ?? false) : false;
   const paymentConfirmed = session?.user ? ((session.user as any)?.paymentConfirmed ?? false) : false;
@@ -209,7 +211,7 @@ export default function TalentDashboard() {
       return;
     }
     if (!access.paymentConfirmed) {
-      window.location.href = "mailto:creativeartistagencyn@gmail.com?subject=Payment%20Confirmation";
+      goToPayment();
       return;
     }
     router.push("/jobs");
@@ -291,10 +293,11 @@ export default function TalentDashboard() {
           >
             <span className="text-[var(--accent-gold)]">Payment required</span> to unlock job listings.{" "}
             <button
-              onClick={() => router.push("/auth/payment")}
-              className="text-[var(--accent-gold)] hover:underline ml-1"
+              onClick={goToPayment}
+              disabled={paymentLoading}
+              className="text-[var(--accent-gold)] hover:underline ml-1 disabled:opacity-60"
             >
-              Complete payment
+              {paymentLoading ? "Loading..." : "Complete payment"}
             </button>
           </motion.div>
         )}

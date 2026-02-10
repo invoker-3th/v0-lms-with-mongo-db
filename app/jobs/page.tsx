@@ -7,6 +7,7 @@ import JobDetailModal from "@/app/components/job-detail-modal";
 import { useSession } from "next-auth/react";
 import TalentSidebar from "@/app/components/talent-sidebar";
 import { MIN_PROFILE_COMPLETION } from "@/lib/constants";
+import { usePaymentNavigation } from "@/lib/use-payment-navigation";
 
 type Job = {
   _id: string;
@@ -39,6 +40,7 @@ export default function JobsListingPage() {
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
   const [accessError, setAccessError] = useState<null | { type: "PROFILE_INCOMPLETE" | "PAYMENT_REQUIRED"; message: string }>(null);
   const [paymentPending, setPaymentPending] = useState(false);
+  const { goToPayment, loading: paymentLoading } = usePaymentNavigation();
   const [filters, setFilters] = useState<Filter>({
     type: [],
     location: "",
@@ -336,12 +338,13 @@ export default function JobsListingPage() {
                 </Link>
               ) : (
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <Link
-                    href="/auth/payment"
-                    className="px-6 py-2 bg-[var(--accent-gold)] text-black font-medium rounded hover:opacity-90 transition font-body text-sm"
+                  <button
+                    onClick={goToPayment}
+                    disabled={paymentLoading}
+                    className="px-6 py-2 bg-[var(--accent-gold)] text-black font-medium rounded hover:opacity-90 transition font-body text-sm disabled:opacity-60"
                   >
-                    Go to Payment
-                  </Link>
+                    {paymentLoading ? "Loading..." : "Go to Payment"}
+                  </button>
                   <a
                     href="mailto:creativeartistagencyn@gmail.com?subject=Payment%20Confirmation"
                     className="px-6 py-2 border border-white/20 text-white hover:border-white/40 transition font-body text-sm"
@@ -413,10 +416,10 @@ export default function JobsListingPage() {
 
                     <div className="relative z-10 flex items-start justify-between gap-6">
                       <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3 flex-wrap">
-                          <h3 className="text-xl text-white group-hover:text-[var(--accent-gold)] transition font-heading">
-                            {job.title}
-                          </h3>
+                <div className="flex items-center gap-3 mb-3 flex-wrap">
+                  <h3 className="text-xl text-white group-hover:text-[var(--accent-gold)] transition font-heading">
+                    {job.title}
+                  </h3>
                           {hasApplied && (
                             <span className="px-3 py-1 text-xs bg-[var(--accent-gold)]/20 text-[var(--accent-gold)] border border-[var(--accent-gold)]/30 rounded font-body">
                               Applied
@@ -439,19 +442,35 @@ export default function JobsListingPage() {
                               Pending
                             </span>
                           )}
-                          {job.directorTrustScore !== undefined && (() => {
-                            // Dynamic import to avoid SSR issues
-                            const { getTrustBadge } = require("@/lib/director-trust");
-                            const badge = getTrustBadge(job.directorTrustScore || 0);
-                            return (
-                              <span
-                                className={`px-2 py-1 text-xs rounded border ${badge.bgColor} ${badge.color} ${badge.borderColor} font-body`}
-                              >
-                                {badge.label}
-                              </span>
-                            );
-                          })()}
-                        </div>
+                  {job.directorTrustScore !== undefined && (() => {
+                    // Dynamic import to avoid SSR issues
+                    const { getTrustBadge } = require("@/lib/director-trust");
+                    const badge = getTrustBadge(job.directorTrustScore || 0);
+                    return (
+                      <span
+                        className={`px-2 py-1 text-xs rounded border ${badge.bgColor} ${badge.color} ${badge.borderColor} font-body`}
+                      >
+                        {badge.label}
+                      </span>
+                    );
+                  })()}
+                  {!isLocked && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const origin = typeof window !== "undefined" ? window.location.origin : "";
+                        const shareUrl = `${origin}/jobs/${job._id}`;
+                        navigator.clipboard.writeText(shareUrl).then(
+                          () => alert("Share link copied to clipboard."),
+                          () => alert(`Share link: ${shareUrl}`)
+                        );
+                      }}
+                      className="px-2 py-1 text-xs border border-white/20 text-white rounded hover:bg-white/10 transition font-body"
+                    >
+                      Share
+                    </button>
+                  )}
+                </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
                           <div>
                             <p className="text-[var(--text-secondary)] mb-1 font-body">Type</p>

@@ -33,6 +33,17 @@ export default function AdminJobsPage() {
   });
   const [showCreate, setShowCreate] = useState(false);
 
+  const handleShare = async (jobId: string) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const shareUrl = `${origin}/jobs/${jobId}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert("Share link copied to clipboard.");
+    } catch (error) {
+      alert(`Share link: ${shareUrl}`);
+    }
+  };
+
   useEffect(() => {
     async function fetchJobs() {
       setLoading(true);
@@ -228,6 +239,12 @@ export default function AdminJobsPage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-white/10">
+                  <button
+                    onClick={() => handleShare(job._id)}
+                    className="px-4 py-2 border border-white/20 text-white rounded hover:bg-white/10 transition"
+                  >
+                    Share Job
+                  </button>
                   <button
                     onClick={() => router.push(`/admin/jobs/${job._id}/applications`)}
                     className="px-4 py-2 border border-white/20 text-white rounded hover:bg-white/10 transition"

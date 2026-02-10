@@ -17,6 +17,7 @@ function SignupContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const redirect = searchParams.get("redirect");
 
   // Check for role query parameter
   useEffect(() => {
@@ -69,7 +70,9 @@ function SignupContent() {
         }
         // Redirect to OTP entry page after a short delay
         setTimeout(() => {
-          const nextUrl = `/auth/send-otp?email=${encodeURIComponent(email)}&locked=1`;
+          const nextUrl = `/auth/send-otp?email=${encodeURIComponent(email)}&locked=1${
+            redirect ? `&redirect=${encodeURIComponent(redirect)}` : ""
+          }`;
           router.push(nextUrl);
         }, 1000);
       } else {
@@ -256,12 +259,15 @@ function SignupContent() {
         <div className="mt-6 text-center space-y-2">
           <p className="text-sm text-[var(--text-secondary)]">
             Already have an account?{" "}
-            <Link href="/auth/password" className="text-[var(--accent-gold)] hover:underline font-body">
+            <Link
+              href={`/auth/password${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""}`}
+              className="text-[var(--accent-gold)] hover:underline font-body"
+            >
               Sign In
             </Link>
           </p>
           <Link
-            href="/auth"
+            href={`/auth${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""}`}
             className="block text-sm text-[var(--text-secondary)] hover:text-white transition font-body"
           >
             ← Back to start

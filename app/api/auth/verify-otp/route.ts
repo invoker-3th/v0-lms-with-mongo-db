@@ -9,6 +9,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const email = (body.email || "").toLowerCase().trim();
     const otp = (body.otp || "").trim();
+    const redirect = typeof body.redirect === "string" ? body.redirect.trim() : "";
 
     if (!email || !otp) {
       return NextResponse.json({ error: "Missing email or OTP" }, { status: 400 });
@@ -48,6 +49,11 @@ export async function POST(req: Request) {
       redirectUrl = "/director/dashboard";
     } else if (user.role === "ADMIN") {
       redirectUrl = "/admin/jobs";
+    }
+
+    const isSafeRedirect = redirect.startsWith("/") && !redirect.startsWith("//");
+    if (isSafeRedirect) {
+      redirectUrl = redirect;
     }
 
     const signInUrl = new URL("/auth/password", req.url);

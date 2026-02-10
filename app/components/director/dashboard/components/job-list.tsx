@@ -18,9 +18,10 @@ type JobListProps = {
   jobs: Job[];
   onJobClick: (job: Job) => void;
   onJobEdit?: (job: Job) => void;
+  onJobShare?: (job: Job) => void;
 };
 
-export default function JobList({ jobs, onJobClick, onJobEdit }: JobListProps) {
+export default function JobList({ jobs, onJobClick, onJobEdit, onJobShare }: JobListProps) {
   if (jobs.length === 0) {
     return (
       <motion.div
@@ -63,6 +64,7 @@ export default function JobList({ jobs, onJobClick, onJobEdit }: JobListProps) {
             job={job}
             onClick={() => onJobClick(job)}
             onEdit={onJobEdit ? () => onJobEdit(job) : undefined}
+            onShare={onJobShare ? () => onJobShare(job) : undefined}
           />
         </motion.div>
       ))}

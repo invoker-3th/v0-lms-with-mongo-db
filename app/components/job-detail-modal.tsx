@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import ApplyFlowModal from "./modals/apply-flow-modal";
 import { getTrustBadge, getTrustStatusText } from "@/lib/director-trust";
+import { usePaymentNavigation } from "@/lib/use-payment-navigation";
 
 type Job = {
   id?: string;
@@ -30,6 +31,7 @@ export default function JobDetailModal({
   const [applyOpen, setApplyOpen] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(true);
+  const { goToPayment, loading: paymentLoading } = usePaymentNavigation();
 
   // Get job ID (support both id and _id for backward compatibility)
   const jobId = job._id || job.id || "";
@@ -168,12 +170,13 @@ export default function JobDetailModal({
                 </>
               ) : needsPayment ? (
                 <>
-                  <Link
-                    href="/auth/payment-required"
-                    className="px-6 py-3 bg-[var(--accent-gold)] text-black font-medium hover:opacity-90 transition text-center"
+                  <button
+                    onClick={goToPayment}
+                    disabled={paymentLoading}
+                    className="px-6 py-3 bg-[var(--accent-gold)] text-black font-medium hover:opacity-90 transition text-center disabled:opacity-60"
                   >
-                    Complete Payment
-                  </Link>
+                    {paymentLoading ? "Loading..." : "Complete Payment"}
+                  </button>
                   <button
                     onClick={onClose}
                     className="px-6 py-3 border border-white/20 text-white hover:bg-white/10 transition"

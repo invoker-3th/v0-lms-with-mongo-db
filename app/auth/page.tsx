@@ -1,11 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function AuthPage() {
+function AuthContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
+  const redirectSuffix = redirect ? `?redirect=${encodeURIComponent(redirect)}` : "";
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] relative flex items-center justify-center p-8">
@@ -35,7 +39,7 @@ export default function AuthPage() {
 
         <div className="space-y-4">
           <Link
-            href="/auth/password"
+            href={`/auth/password${redirectSuffix}`}
             className="block w-full px-6 py-3 bg-[var(--accent-gold)] text-black font-medium rounded hover:opacity-90 transition text-center font-body"
           >
             Sign In with Email
@@ -53,7 +57,7 @@ export default function AuthPage() {
           </div>
 
           <Link
-            href="/signup"
+            href={`/signup${redirectSuffix}`}
             className="block w-full px-6 py-3 border border-white/20 text-white font-medium rounded hover:bg-white/10 transition text-center font-body"
           >
             Create Account
@@ -70,6 +74,18 @@ export default function AuthPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
+        <p className="text-[var(--text-secondary)]">Loading...</p>
+      </div>
+    }>
+      <AuthContent />
+    </Suspense>
   );
 }
 

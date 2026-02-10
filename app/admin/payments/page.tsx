@@ -37,6 +37,14 @@ export default function AdminPaymentsPage() {
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [bulkConfirming, setBulkConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [confirmUser, setConfirmUser] = useState<PendingUser | null>(null);
+  const [confirmMethod, setConfirmMethod] = useState<"ETH" | "BTC">("ETH");
+  const [confirmReference, setConfirmReference] = useState("");
+  const [confirmReason, setConfirmReason] = useState("");
+  const [confirmingSingle, setConfirmingSingle] = useState(false);
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  const [bulkReason, setBulkReason] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -105,25 +113,31 @@ export default function AdminPaymentsPage() {
     }
   }
 
-  async function confirmPayment(userId: string) {
-    const method = prompt("Enter payment method to confirm (ETH or BTC):");
-    if (!method) return;
-    const m = method.toUpperCase().trim();
-    if (m !== "ETH" && m !== "BTC") {
-      alert("Invalid method. Use ETH or BTC.");
-      return;
-    }
-    const reference = prompt("Enter transaction reference (optional):");
-    const reason = prompt("Optional note/reason for audit log:");
+  function openConfirmModal(user: PendingUser) {
+    setConfirmUser(user);
+    setConfirmMethod("ETH");
+    setConfirmReference("");
+    setConfirmReason("");
+    setConfirmModalOpen(true);
+  }
 
+  async function submitConfirmPayment() {
+    if (!confirmUser) return;
+    setConfirmingSingle(true);
     try {
-      const res = await fetch(`/api/admin/users/${userId}/confirm-payment`, {
+      const res = await fetch(`/api/admin/users/${confirmUser._id}/confirm-payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ method: m, reference, reason }),
+        body: JSON.stringify({
+          method: confirmMethod,
+          reference: confirmReference || undefined,
+          reason: confirmReason || undefined,
+        }),
       });
       if (res.ok) {
         alert("Payment confirmed and user unlocked.");
+        setConfirmModalOpen(false);
+        setConfirmUser(null);
         fetchData();
       } else {
         const d = await res.json();
@@ -132,6 +146,8 @@ export default function AdminPaymentsPage() {
     } catch (err) {
       console.error(err);
       alert("Network error. Please try again.");
+    } finally {
+      setConfirmingSingle(false);
     }
   }
 
@@ -141,10 +157,11 @@ export default function AdminPaymentsPage() {
       return;
     }
 
-    const reason = prompt(
-      `Confirm ${selectedUsers.size} payment(s). Enter optional note/reason for audit log:`
-    );
+    setBulkReason("");
+    setBulkModalOpen(true);
+  }
 
+  async function submitBulkConfirm() {
     setBulkConfirming(true);
     try {
       const res = await fetch("/api/admin/users/bulk-confirm-payment", {
@@ -152,7 +169,7 @@ export default function AdminPaymentsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userIds: Array.from(selectedUsers),
-          reason: reason || undefined,
+          reason: bulkReason || undefined,
         }),
       });
 
@@ -162,6 +179,7 @@ export default function AdminPaymentsPage() {
           `Successfully confirmed ${data.confirmed} payment(s). Users unlocked.`
         );
         setSelectedUsers(new Set());
+        setBulkModalOpen(false);
         fetchData();
       } else {
         const d = await res.json();
@@ -405,7 +423,7 @@ export default function AdminPaymentsPage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => confirmPayment(u._id)}
+                      onClick={() => openConfirmModal(u)}
                       className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition text-sm"
                     >
                       Confirm
@@ -446,6 +464,141 @@ export default function AdminPaymentsPage() {
           )}
         </div>
       </div>
+
+      {/* Confirm Single Payment Modal */}
+      {confirmModalOpen && confirmUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-lg bg-[var(--bg-main)] border border-white/10 rounded-lg p-6">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <h3 className="text-lg text-white">Confirm Payment</h3>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  {confirmUser.name || confirmUser.email}
+                </p>
+              </div>
+              <button
+                onClick={() => setConfirmModalOpen(false)}
+                className="text-[var(--text-secondary)] hover:text-white"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                  Payment Method
+                </label>
+                <div className="flex gap-2">
+                  {(["ETH", "BTC"] as const).map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setConfirmMethod(m)}
+                      className={`px-4 py-2 rounded border text-sm transition ${
+                        confirmMethod === m
+                          ? "bg-[var(--accent-gold)]/10 border-[var(--accent-gold)] text-[var(--accent-gold)]"
+                          : "bg-white/5 border-white/10 text-white hover:border-white/20"
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                  Transaction Reference (optional)
+                </label>
+                <input
+                  value={confirmReference}
+                  onChange={(e) => setConfirmReference(e.target.value)}
+                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white"
+                  placeholder="Tx hash or reference"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                  Audit Note (optional)
+                </label>
+                <textarea
+                  value={confirmReason}
+                  onChange={(e) => setConfirmReason(e.target.value)}
+                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white"
+                  rows={3}
+                  placeholder="Optional note for audit log"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setConfirmModalOpen(false)}
+                className="px-4 py-2 border border-white/20 text-white rounded hover:bg-white/10"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitConfirmPayment}
+                disabled={confirmingSingle}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+              >
+                {confirmingSingle ? "Confirming..." : "Confirm Payment"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Confirm Modal */}
+      {bulkModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-lg bg-[var(--bg-main)] border border-white/10 rounded-lg p-6">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <h3 className="text-lg text-white">Confirm Selected Payments</h3>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  {selectedUsers.size} user(s) selected
+                </p>
+              </div>
+              <button
+                onClick={() => setBulkModalOpen(false)}
+                className="text-[var(--text-secondary)] hover:text-white"
+              >
+                Close
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                Audit Note (optional)
+              </label>
+              <textarea
+                value={bulkReason}
+                onChange={(e) => setBulkReason(e.target.value)}
+                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white"
+                rows={3}
+                placeholder="Optional note for audit log"
+              />
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setBulkModalOpen(false)}
+                className="px-4 py-2 border border-white/20 text-white rounded hover:bg-white/10"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitBulkConfirm}
+                disabled={bulkConfirming}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+              >
+                {bulkConfirming ? "Confirming..." : "Confirm Payments"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

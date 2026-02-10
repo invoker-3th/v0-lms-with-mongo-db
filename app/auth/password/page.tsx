@@ -274,7 +274,10 @@ function PasswordLoginPage() {
         <div className="mt-6 text-center space-y-2">
           <p className="text-sm text-[var(--text-secondary)]">
             Don't have an account?{" "}
-            <Link href="/signup" className="text-[var(--accent-gold)] hover:underline font-body">
+            <Link
+              href={`/signup${searchParams.get("redirect") ? `?redirect=${encodeURIComponent(searchParams.get("redirect") || "")}` : ""}`}
+              className="text-[var(--accent-gold)] hover:underline font-body"
+            >
               Sign Up
             </Link>
           </p>

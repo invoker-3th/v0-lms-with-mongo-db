@@ -17,9 +17,10 @@ type JobCardProps = {
   job: Job;
   onClick: () => void;
   onEdit?: () => void;
+  onShare?: () => void;
 };
 
-export default function JobCard({ job, onClick, onEdit }: JobCardProps) {
+export default function JobCard({ job, onClick, onEdit, onShare }: JobCardProps) {
   // Select image based on job type for visual variety
   const getJobImage = (type: string) => {
     const images = {
@@ -59,6 +60,18 @@ export default function JobCard({ job, onClick, onEdit }: JobCardProps) {
             </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
+            {onShare && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onShare();
+                }}
+                className="px-2 py-1 text-xs border border-white/20 text-white rounded hover:bg-white/10 transition whitespace-nowrap"
+                aria-label="Share job"
+              >
+                Share
+              </button>
+            )}
             <span
               className={`px-2 sm:px-3 py-1 text-xs rounded whitespace-nowrap ${
                 job.status === "open"

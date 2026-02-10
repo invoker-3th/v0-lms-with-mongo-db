@@ -374,6 +374,18 @@ export default function CastingDashboard() {
     }
   }
 
+  const handleShareJob = async (job: Job) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const shareUrl = `${origin}/jobs/${job.id}`;
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert("Share link copied to clipboard.");
+    } catch (error) {
+      alert(`Share link: ${shareUrl}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[var(--bg-main)] relative">
       {/* Noise overlay */}
@@ -491,6 +503,7 @@ export default function CastingDashboard() {
               jobs={jobs}
               onJobClick={(job) => setSelectedJob(job)}
               onJobEdit={(job) => setEditingJob(job)}
+              onJobShare={handleShareJob}
             />
           )}
         </motion.div>

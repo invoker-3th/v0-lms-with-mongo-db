@@ -13,6 +13,7 @@ function SendOtpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const lockedEmail = searchParams.get("locked") === "1";
+  const redirect = searchParams.get("redirect");
 
   useEffect(() => {
     const queryEmail = (searchParams.get("email") || "").trim();
@@ -68,7 +69,7 @@ function SendOtpContent() {
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
+        body: JSON.stringify({ email, otp, redirect }),
       });
       const data = await res.json();
       if (res.ok && data?.redirect) {

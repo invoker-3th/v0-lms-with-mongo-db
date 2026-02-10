@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import TalentSidebar from "@/app/components/talent-sidebar";
+import { usePaymentNavigation } from "@/lib/use-payment-navigation";
 
 type ProfileData = {
   id: string;
@@ -64,6 +65,7 @@ export default function TalentProfilePage() {
 
   const [skillInput, setSkillInput] = useState("");
   const [experienceInput, setExperienceInput] = useState("");
+  const { goToPayment, loading: paymentLoading } = usePaymentNavigation();
 
   useEffect(() => {
     async function fetchProfile() {
@@ -446,10 +448,11 @@ export default function TalentProfilePage() {
               </div>
               <button
                 type="button"
-                onClick={() => router.push("/auth/payment")}
-                className="px-4 py-2 bg-[var(--accent-gold)] text-black text-sm font-medium rounded hover:opacity-90 transition"
+                onClick={goToPayment}
+                disabled={paymentLoading}
+                className="px-4 py-2 bg-[var(--accent-gold)] text-black text-sm font-medium rounded hover:opacity-90 transition disabled:opacity-60"
               >
-                Go to Payment
+                {paymentLoading ? "Loading..." : "Go to Payment"}
               </button>
             </div>
           </motion.div>
