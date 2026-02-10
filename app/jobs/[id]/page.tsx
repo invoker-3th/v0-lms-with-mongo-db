@@ -109,7 +109,7 @@ export default function SharedJobPage({ params }: { params: { id: string } }) {
 
   const needsProfile = isTalent && access.profileCompletion < MIN_PROFILE_COMPLETION;
   const needsPayment = isTalent && !access.paymentConfirmed;
-  const isClosed = job.status === "closed";
+  const isClosed = job?.status === "closed";
 
   const authRedirect = useMemo(() => `/auth?redirect=/jobs/${jobId}`, [jobId]);
   const signupRedirect = useMemo(() => `/signup?redirect=/jobs/${jobId}`, [jobId]);
