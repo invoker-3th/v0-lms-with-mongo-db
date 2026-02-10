@@ -3,6 +3,8 @@ import { getDB } from "./db"
 import type { User } from "./types"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
+import crypto from "crypto"
+import { sendOtpEmail } from "./email"
 
 export interface SessionData {
   userId: string
@@ -12,6 +14,7 @@ export interface SessionData {
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production"
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d"
+const OTP_EXPIRES_MINUTES = Number(process.env.OTP_EXPIRES_MINUTES || 15)
 
 // Password hashing utility
 async function hashPassword(password: string): Promise<string> {
@@ -22,6 +25,12 @@ async function hashPassword(password: string): Promise<string> {
 // Password verification utility
 async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
   return bcrypt.compare(password, hashedPassword)
+}
+
+function generateOtpCode(): string {
+  const buffer = crypto.randomBytes(3)
+  const code = (buffer.readUIntBE(0, 3) % 1000000).toString().padStart(6, "0")
+  return code
 }
 
 // Generate JWT token
@@ -78,6 +87,10 @@ export const authService = {
       return null
     }
 
+    if (user.emailVerified === false) {
+      return null
+    }
+
     // Generate JWT token
     const token = generateToken(user)
 
@@ -108,6 +121,7 @@ export const authService = {
       password: hashedPassword,
       name,
       role,
+      emailVerified: true,
       enrolledCourses: [],
     })
 
@@ -118,6 +132,89 @@ export const authService = {
     const { password: _, ...userWithoutPassword } = user
 
     return { user: userWithoutPassword as User, token }
+  },
+
+  async registerWithOtp(
+    email: string,
+    password: string,
+    name: string,
+    role: "student" | "instructor" | "admin" | "finance" = "student"
+  ): Promise<{ user: User }> {
+    const db = getDB()
+    const existingUser = await db.findUserByEmail(email)
+
+    if (existingUser) {
+      throw new Error("User already exists")
+    }
+
+    const hashedPassword = await hashPassword(password)
+    const otp = generateOtpCode()
+    const otpHash = await hashPassword(otp)
+    const otpExpiresAt = new Date(Date.now() + OTP_EXPIRES_MINUTES * 60 * 1000)
+
+    const user = await db.createUser({
+      email,
+      password: hashedPassword,
+      name,
+      role,
+      emailVerified: false,
+      otpHash,
+      otpExpiresAt,
+      enrolledCourses: [],
+    })
+
+    await sendOtpEmail({ to: email, name, otp })
+
+    const { password: _, ...userWithoutPassword } = user
+    return { user: userWithoutPassword as User }
+  },
+
+  async verifyOtp(email: string, otp: string): Promise<{ user: User; token: string } | null> {
+    const db = getDB()
+    const user = await db.findUserByEmail(email)
+
+    if (!user || !user.otpHash || !user.otpExpiresAt) {
+      return null
+    }
+
+    if (new Date(user.otpExpiresAt).getTime() < Date.now()) {
+      return null
+    }
+
+    const isValid = await verifyPassword(otp, user.otpHash)
+    if (!isValid) {
+      return null
+    }
+
+    const updated = await db.updateUser(user.id, {
+      emailVerified: true,
+      otpHash: undefined,
+      otpExpiresAt: undefined,
+    })
+
+    if (!updated) return null
+
+    const token = generateToken(updated as User)
+    const { password: _, ...userWithoutPassword } = updated as User
+    return { user: userWithoutPassword as User, token }
+  },
+
+  async resendOtp(email: string): Promise<boolean> {
+    const db = getDB()
+    const user = await db.findUserByEmail(email)
+
+    if (!user || user.emailVerified) {
+      return false
+    }
+
+    const otp = generateOtpCode()
+    const otpHash = await hashPassword(otp)
+    const otpExpiresAt = new Date(Date.now() + OTP_EXPIRES_MINUTES * 60 * 1000)
+
+    await db.updateUser(user.id, { otpHash, otpExpiresAt })
+    await sendOtpEmail({ to: email, name: user.name, otp })
+
+    return true
   },
 
   async getCurrentUser(token: string): Promise<User | null> {

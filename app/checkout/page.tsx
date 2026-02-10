@@ -60,20 +60,20 @@ export default function CheckoutPage() {
         throw new Error(paymentResult.error || "Payment initialization failed")
       }
 
-      // In a real app, redirect to Paystack payment page
-      // For now, simulate payment completion after 2 seconds
-      setTimeout(async () => {
-        // Verify payment (simulate success)
-        const verifyRes = await fetch(`/api/payments/verify?reference=${paymentResult.payment.reference}`)
-        const verified = await verifyRes.json()
+      if (paymentResult.authorization_url) {
+        window.location.href = paymentResult.authorization_url
+        return
+      }
 
-        if (verified?.verified) {
-          clearCart()
-          router.push(`/checkout/success?reference=${paymentResult.payment.reference}`)
-        } else {
-          router.push("/checkout/failed")
-        }
-      }, 2000)
+      // Fallback: verify directly if no authorization URL returned
+      const verifyRes = await fetch(`/api/payments/verify?reference=${paymentResult.payment.reference}`)
+      const verified = await verifyRes.json()
+      if (verified?.verified) {
+        clearCart()
+        router.push(`/checkout/success?reference=${paymentResult.payment.reference}`)
+      } else {
+        router.push("/checkout/failed")
+      }
     } catch (error) {
       console.error("Payment error:", error)
       alert("Payment failed. Please try again.")

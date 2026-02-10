@@ -11,6 +11,9 @@ export interface User {
   avatar?: string
   bio?: string
   status?: "active" | "suspended"
+  emailVerified?: boolean
+  otpHash?: string
+  otpExpiresAt?: Date
   enrolledCourses: string[] // Course IDs
   createdAt: Date
   updatedAt: Date

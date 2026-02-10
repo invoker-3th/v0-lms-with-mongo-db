@@ -29,6 +29,17 @@ export default function CheckoutSuccessPage() {
         const foundPayment = data.payments?.[0] || null
         setPayment(foundPayment)
 
+        if (foundPayment && foundPayment.status !== "completed") {
+          await fetch(`/api/payments/verify?reference=${reference}`)
+          const refreshed = await fetch(`/api/payments?reference=${reference}`)
+          const refreshedData = await refreshed.json()
+          const refreshedPayment = refreshedData.payments?.[0] || null
+          setPayment(refreshedPayment)
+          if (refreshedPayment) {
+            foundPayment = refreshedPayment
+          }
+        }
+
         const ids =
           foundPayment?.courseIds && foundPayment.courseIds.length > 0
             ? foundPayment.courseIds

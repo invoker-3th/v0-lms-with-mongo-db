@@ -20,17 +20,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify payment with Paystack
-    const verification = await paystackService.verifyPayment(
-      reference,
-      payment.amount,
-      payment.currency
-    )
+    const verification = await paystackService.verifyPayment(reference)
 
     if (verification.status === "success") {
       // Update payment status
       await db.updatePaymentByReference(reference, {
         status: "completed",
         completedAt: new Date(),
+        amount: verification.amount,
+        currency: verification.currency,
       })
 
       // Auto-enroll user in course if not already enrolled

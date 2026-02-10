@@ -19,12 +19,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize payment with Paystack
-    const paymentInit = await paystackService.initializePayment(
+    const callbackUrl = process.env.NEXT_PUBLIC_APP_URL
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success`
+      : undefined
+
+    const paymentInit = await paystackService.initializePayment({
       email,
       amount,
-      currency as "NGN" | "USD" | "GBP",
-      { userId, courseIds }
-    )
+      currency: currency as "NGN" | "USD" | "GBP",
+      metadata: { userId, courseIds },
+      callbackUrl,
+    })
 
     // Create payment record in database
     const payment = await db.createPayment({

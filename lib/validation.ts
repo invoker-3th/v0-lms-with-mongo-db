@@ -71,6 +71,15 @@ export const paymentRefundSchema = z.object({
   status: z.enum(["refunded"]),
 })
 
+export const otpVerifySchema = z.object({
+  email: z.string().email(),
+  otp: z.string().length(6),
+})
+
+export const otpResendSchema = z.object({
+  email: z.string().email(),
+})
+
 export const profileUpdateSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   bio: z.string().optional(),

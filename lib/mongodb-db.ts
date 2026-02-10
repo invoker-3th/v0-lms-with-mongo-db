@@ -25,6 +25,9 @@ function toObject<T extends { id: string }>(doc: any): T {
   if (converted.updatedAt && typeof converted.updatedAt === 'object') {
     converted.updatedAt = new Date(converted.updatedAt)
   }
+  if (converted.otpExpiresAt && typeof converted.otpExpiresAt === 'object') {
+    converted.otpExpiresAt = new Date(converted.otpExpiresAt)
+  }
   if (converted.enrolledAt && typeof converted.enrolledAt === 'object') {
     converted.enrolledAt = new Date(converted.enrolledAt)
   }

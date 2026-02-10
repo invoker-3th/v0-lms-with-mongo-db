@@ -1,20 +1,17 @@
 import { NextResponse } from "next/server"
 import { authService } from "@/lib/auth"
-import { loginSchema } from "@/lib/validation"
+import { otpVerifySchema } from "@/lib/validation"
 import { ZodError } from "zod"
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
+    const validated = otpVerifySchema.parse(body)
 
-    // Validate input
-    const validated = loginSchema.parse(body)
-
-    // Attempt login
-    const result = await authService.login(validated.email, validated.password)
+    const result = await authService.verifyOtp(validated.email, validated.otp)
 
     if (!result) {
-      return NextResponse.json({ error: "Invalid credentials or email not verified" }, { status: 401 })
+      return NextResponse.json({ error: "Invalid or expired OTP" }, { status: 400 })
     }
 
     return NextResponse.json({

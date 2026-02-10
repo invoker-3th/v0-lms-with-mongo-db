@@ -11,17 +11,25 @@ export async function POST(request: Request) {
     const validated = registerSchema.parse(body)
 
     // Attempt registration
-    const result = await authService.register(
+    const role = validated.role || "student"
+    if (role === "admin" || role === "finance") {
+      return NextResponse.json(
+        { error: "Admin and Finance accounts must be created by an administrator." },
+        { status: 403 }
+      )
+    }
+
+    const result = await authService.registerWithOtp(
       validated.email,
       validated.password,
       validated.name,
-      validated.role || "student"
+      role
     )
 
     return NextResponse.json({
       success: true,
       user: result.user,
-      token: result.token,
+      message: "OTP sent to email",
     })
   } catch (error) {
     if (error instanceof Error && error.message === "User already exists") {
