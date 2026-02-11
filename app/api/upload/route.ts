@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import cloudinary, { secondaryCloudinary } from "@/lib/cloudinary";
+import cloudinary, { uploadToAccount, hasSecondary } from "@/lib/cloudinary";
 
 /**
  * POST /api/upload
@@ -46,52 +46,16 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Upload to primary Cloudinary
-    const uploadPrimary = () =>
-      new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            resource_type: isVideo ? "video" : isDocument ? "raw" : "image",
-            folder: "hubmovies",
-          },
-          (error: any, result: any) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
-        );
-        uploadStream.end(buffer);
-      });
-
-    // Upload to secondary Cloudinary (if configured)
-    const uploadSecondary = () =>
-      new Promise(async (resolve, reject) => {
-        if (!secondaryCloudinary) return resolve(null);
-        try {
-          const uploadStream = secondaryCloudinary.uploader.upload_stream(
-            {
-              resource_type: isVideo ? "video" : isDocument ? "raw" : "image",
-              folder: "hubmovies",
-            },
-            (error: any, result: any) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-          );
-          uploadStream.end(buffer);
-        } catch (err) {
-          // Don't fail overall if secondary upload fails
-          console.error("Secondary Cloudinary upload failed:", err);
-          resolve(null);
-        }
-      });
-
-    const primaryResult = await uploadPrimary();
+    // Upload to primary Cloudinary using helper
+    const primaryResult = await uploadToAccount(buffer, { resource_type: isVideo ? "video" : isDocument ? "raw" : "image", folder: "hubmovies" }, "primary");
     let secondaryResult: any = null;
-    try {
-      secondaryResult = await uploadSecondary();
-    } catch (err) {
-      // swallow secondary errors
-      secondaryResult = null;
+    if (hasSecondary) {
+      try {
+        secondaryResult = await uploadToAccount(buffer, { resource_type: isVideo ? "video" : isDocument ? "raw" : "image", folder: "hubmovies" }, "secondary");
+      } catch (err) {
+        console.error("Secondary Cloudinary upload failed:", err);
+        secondaryResult = null;
+      }
     }
 
     const url = (primaryResult as any)?.secure_url || null;

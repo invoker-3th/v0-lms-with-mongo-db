@@ -7,13 +7,14 @@ interface EmailOptions {
   to: string | string[];
   subject: string;
   html: string;
+  attachments?: Array<{ filename: string; contentType?: string; data: string | Buffer }>;
 }
 
 /**
  * Send email notification
  * Falls back gracefully if email service is not configured
  */
-export async function sendEmail({ to, subject, html }: EmailOptions): Promise<boolean> {
+export async function sendEmail({ to, subject, html, attachments }: EmailOptions): Promise<boolean> {
   const context = {
     to: Array.isArray(to) ? to.join(',') : to,
     subject,
@@ -28,12 +29,16 @@ export async function sendEmail({ to, subject, html }: EmailOptions): Promise<bo
   }
 
   try {
-    const { data, error } = await resend.emails.send({
-      from: FROM_EMAIL,
-      to,
-      subject,
-      html,
-    });
+    const payload: any = { from: FROM_EMAIL, to, subject, html };
+    if (attachments && attachments.length > 0) {
+      payload.attachments = attachments.map((a) => ({
+        filename: a.filename,
+        type: a.contentType || "application/octet-stream",
+        data: typeof a.data === "string" ? a.data : (a.data as Buffer).toString("base64"),
+      }));
+    }
+
+    const { data, error } = await resend.emails.send(payload);
 
     if (error) {
       console.error("[Email] Resend error:", { ...context, error });
@@ -286,6 +291,61 @@ export async function sendOtpEmail(userEmail: string, otp: string, expiresMinute
             <div class="code">${otp}</div>
             <p>If you didn't request this code, please ignore this message.</p>
             <p class="footer">This is an automated email from HubMovies Cast.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({ to: userEmail, subject, html });
+}
+
+/**
+ * Send welcome email after OTP confirmation
+ */
+export async function sendWelcomeEmail(
+  userEmail: string,
+  role?: string,
+  name?: string
+): Promise<boolean> {
+  const subject = "Welcome to HubMovies Cast!";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://hubmovies-cd.com";
+  const profileUrl = role === "TALENT" ? `${appUrl}/talent/profile` : appUrl;
+  const jobsUrl = `${appUrl}/jobs`;
+  const greetingName = name ? ` ${name}` : "";
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #0b0b0c; color: #f4f4f5; padding: 20px; text-align: center; }
+          .content { background: #fff; padding: 30px; border: 1px solid #e0e0e0; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; }
+          .button { display: inline-block; padding: 12px 24px; background: #c7a24b; color: #000; text-decoration: none; border-radius: 4px; margin-top: 12px; font-weight: bold; }
+          .secondary { display: inline-block; padding: 12px 24px; background: #111; color: #fff; text-decoration: none; border-radius: 4px; margin-top: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>HubMovies Cast</h1>
+          </div>
+          <div class="content">
+            <h2>Welcome${greetingName}!</h2>
+            <p>Your email has been confirmed. Next steps:</p>
+            <ol>
+              <li>Complete your profile so casting teams can find you.</li>
+              <li>Browse open roles and apply to opportunities.</li>
+            </ol>
+            <a href="${profileUrl}" class="button">Complete Your Profile</a>
+            <a href="${jobsUrl}" class="secondary">Browse Jobs</a>
+          </div>
+          <div class="footer">
+            <p>This is an automated email from HubMovies Cast.</p>
           </div>
         </div>
       </body>

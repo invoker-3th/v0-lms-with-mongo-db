@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/user";
 import VerificationToken from "@/models/verification-token";
 import { calculateTalentProfileCompletion } from "@/lib/profile-completion";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -33,12 +34,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const wasVerified = Boolean(user.emailVerified);
     // Mark email verified
     user.emailVerified = new Date();
     await user.save();
 
     // Delete token
     await VerificationToken.deleteOne({ _id: verificationToken._id });
+
+    // Send welcome email after first-time OTP verification (best-effort)
+    if (!wasVerified) {
+      try {
+        await sendWelcomeEmail(user.email, user.role, user.name || undefined);
+      } catch (emailErr) {
+        console.error("Failed to send welcome email after OTP verification:", emailErr);
+      }
+    }
 
     // Prepare redirect similar to verify-email route
     let redirectUrl = "/";

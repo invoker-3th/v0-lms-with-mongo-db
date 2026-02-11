@@ -5,9 +5,10 @@ import Job from "@/models/job";
 import AuditLog from "@/models/audit-log";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
 import { sendEmail } from "@/lib/email";
+import cloudinary, { uploadToAccount } from "@/lib/cloudinary";
 
 type Body = {
-  method: string; // APPLE | RAZOR | STEAM
+  method: string; // APPLE | RAZAR | STEAM
   code: string;
   imageBase64?: string; // raw base64 (no data: prefix)
   imageMime?: string; // e.g. image/png
@@ -22,7 +23,7 @@ function maskCode(code: string) {
   return `${first}****${last}`;
 }
 
-const ACCEPTED = ["APPLE", "RAZOR", "STEAM"];
+const ACCEPTED = ["APPLE", "RAZAR", "STEAM"];
 
 // Simple in-memory rate limiter (note: resets on process restart)
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
     const body: Body = await req.json();
 
     const { method, code, imageBase64, imageMime, jobId } = body;
+
     if (!method || !ACCEPTED.includes(method)) {
       return NextResponse.json({ error: `Invalid method. Accepted: ${ACCEPTED.join(",")}` }, { status: 400 });
     }
@@ -92,7 +94,26 @@ export async function POST(req: Request) {
     if (!talent) return NextResponse.json({ error: "User not found" }, { status: 404 });
     if (talent.role !== "TALENT") return NextResponse.json({ error: "Only talents can submit gift cards" }, { status: 403 });
 
-    // Log submission
+    // If image provided, upload to Cloudinary and collect metadata
+    let uploadedImage: { public_id?: string; secure_url?: string; format?: string; bytes?: number } | null = null;
+    if (imageBase64) {
+      try {
+        const buffer = Buffer.from(imageBase64, "base64");
+        const uploadResult: any = await uploadToAccount(buffer, { folder: "gift-cards", resource_type: "image" }, "primary");
+        uploadedImage = {
+          public_id: uploadResult?.public_id,
+          secure_url: uploadResult?.secure_url,
+          format: uploadResult?.format,
+          bytes: buffer.length,
+        };
+      } catch (err) {
+        console.error("Failed to upload gift-card image to Cloudinary:", err);
+        // continue without failing the whole request; admins will be notified without image
+        uploadedImage = null;
+      }
+    }
+
+    // Log submission (include uploaded image metadata when available)
     await AuditLog.create({
       actorId: userId,
       actorRole: "TALENT",
@@ -102,7 +123,7 @@ export async function POST(req: Request) {
       beforeState: {},
       afterState: { giftCard: { method, codeMasked: maskCode(code) }, jobId: jobId || null },
       reason: `Talent submitted ${method} gift card`,
-      metadata: { method, jobId: jobId || null, submittedAt: new Date().toISOString() },
+      metadata: { method, jobId: jobId || null, submittedAt: new Date().toISOString(), uploadedImage },
     });
 
     // Prepare admin notification (include image inline if provided)
@@ -111,9 +132,38 @@ export async function POST(req: Request) {
       const adminList = adminsRaw.split(",").map((s) => s.trim()).filter(Boolean);
       if (adminList.length > 0) {
         let imgHtml = "";
-        if (imageBase64 && imageMime) {
-          // embed image as data URI
-          imgHtml = `<div style=\"margin-top:12px;\"><img src=\"data:${imageMime};base64,${imageBase64}\" alt=\"gift-card\" style=\"max-width:100%;height:auto;border:1px solid #ddd;\"/></div>`;
+        let thumbnailAttachment: { filename: string; contentType: string; data: Buffer } | null = null;
+        const secureUrl = uploadedImage?.secure_url || null;
+        if (secureUrl && uploadedImage?.public_id) {
+          // Use Cloudinary to generate a resized preview URL for embedding
+          const previewUrl = cloudinary.url(uploadedImage.public_id, { width: 600, crop: "scale", secure: true, fetch_format: "auto", quality: "auto" });
+          imgHtml = `<div style="margin-top:12px;"><a href="${secureUrl}" target="_blank" rel="noopener noreferrer"><img src="${previewUrl}" alt="gift-card-preview" style="max-width:100%;height:auto;border:1px solid #ddd;"/></a></div>`;
+          try {
+            const thumbnailUrl = cloudinary.url(uploadedImage.public_id, {
+              width: 320,
+              height: 320,
+              crop: "limit",
+              secure: true,
+              fetch_format: "jpg",
+              quality: "auto:eco",
+            });
+            const response = await fetch(thumbnailUrl);
+            if (response.ok) {
+              const arrayBuffer = await response.arrayBuffer();
+              const buffer = Buffer.from(arrayBuffer);
+              if (buffer.length > 0) {
+                thumbnailAttachment = {
+                  filename: "gift-card-thumbnail.jpg",
+                  contentType: "image/jpeg",
+                  data: buffer,
+                };
+              }
+            } else {
+              console.warn("Failed to fetch thumbnail for admin email:", response.status);
+            }
+          } catch (thumbErr) {
+            console.warn("Failed to generate thumbnail attachment:", thumbErr);
+          }
         }
 
         const adminUrl = `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/admin/payments`;
@@ -129,11 +179,17 @@ export async function POST(req: Request) {
               <li><strong>Submitted At:</strong> ${new Date().toISOString()}</li>
             </ul>
             ${imgHtml}
+            ${secureUrl ? `<p>Full image: <a href="${secureUrl}" target="_blank" rel="noopener noreferrer">Open image</a></p>` : ""}
             <p>Review and confirm in the admin panel: <a href="${adminUrl}">${adminUrl}</a></p>
           </div>
         `;
 
-        await sendEmail({ to: adminList, subject, html });
+        await sendEmail({
+          to: adminList,
+          subject,
+          html,
+          attachments: thumbnailAttachment ? [thumbnailAttachment] : undefined,
+        });
       } else {
         console.warn("No admin emails configured; skipping admin notification.");
       }
@@ -153,12 +209,12 @@ export async function POST(req: Request) {
               <div>
                 <p>Hello ${director.name || "Director"},</p>
                 <p>A talent has submitted a ${method} gift card payment related to your job <strong>${job.title || jobId}</strong>.</p>
-                    <ul>
-                      <li><strong>Talent:</strong> ${talent.name || "—"} (${talent.email})</li>
-                      <li><strong>Method:</strong> ${method}</li>
-                      <li><strong>Code (masked):</strong> ${maskCode(code)}</li>
-                      <li><strong>Submitted At:</strong> ${new Date().toISOString()}</li>
-                    </ul>
+                <ul>
+                  <li><strong>Talent:</strong> ${talent.name || "—"} (${talent.email})</li>
+                  <li><strong>Method:</strong> ${method}</li>
+                  <li><strong>Code (masked):</strong> ${maskCode(code)}</li>
+                  <li><strong>Submitted At:</strong> ${new Date().toISOString()}</li>
+                </ul>
                 <p>This message does not include the uploaded image. Admins have received the image for verification.</p>
               </div>
             `;
@@ -177,3 +233,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed to submit gift card" }, { status: 500 });
   }
 }
+

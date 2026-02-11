@@ -87,7 +87,7 @@ export default function SubmitGiftCardPage() {
           <span className="text-sm">Method</span>
           <select value={method} onChange={(e) => setMethod(e.target.value)} className="w-full mt-1">
             <option value="APPLE">Apple</option>
-            <option value="RAZOR">Razor Gold</option>
+            <option value="RAZAR">Razar Gold</option>
             <option value="STEAM">Steam</option>
           </select>
         </label>
