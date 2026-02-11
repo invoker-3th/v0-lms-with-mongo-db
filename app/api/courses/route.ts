@@ -2,6 +2,32 @@ import { type NextRequest, NextResponse } from "next/server"
 import { ZodError } from "zod"
 import { getDB } from "@/lib/db"
 import { courseCreateSchema } from "@/lib/validation"
+import { authService } from "@/lib/auth"
+
+function maskCourseForUser(course: any, user: any) {
+  const isAdmin = user?.role === "admin"
+  const isInstructorOwner = user?.role === "instructor" && course.instructorId === user.id
+
+  // If admin or the course instructor, return as-is
+  if (isAdmin || isInstructorOwner) return course
+
+  // Otherwise, avoid returning raw videoUrl - extract youtube id if possible
+  const copy = JSON.parse(JSON.stringify(course))
+  for (const mod of copy.modules || []) {
+    for (const lesson of mod.lessons || []) {
+      if (lesson.content?.videoUrl) {
+        const url = lesson.content.videoUrl as string
+        const ytMatch = url.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([A-Za-z0-9_-]{11})/)
+        if (ytMatch && ytMatch[1]) {
+          lesson.content.videoId = ytMatch[1]
+        }
+        // Remove the raw URL to avoid leakage
+        delete lesson.content.videoUrl
+      }
+    }
+  }
+  return copy
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,7 +72,17 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ courses })
+    // Mask video URLs for unauthenticated/non-privileged users
+    const authHeader = request.headers.get("authorization")
+    const token = authHeader?.replace("Bearer ", "")
+    let user = null
+    if (token) {
+      user = await authService.getCurrentUser(token)
+    }
+
+    const safeCourses = courses.map((c: any) => maskCourseForUser(c, user))
+
+    return NextResponse.json({ courses: safeCourses })
   } catch (error) {
     console.error("Get courses error:", error)
     return NextResponse.json({ error: "Failed to get courses" }, { status: 500 })

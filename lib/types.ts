@@ -65,6 +65,8 @@ export interface Lesson {
   duration?: number // in minutes
   content: {
     videoUrl?: string
+    // Optional server-side note when a lesson is rejected
+    rejectionNote?: string
     articleContent?: string
     quizId?: string
     assignmentId?: string

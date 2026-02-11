@@ -418,6 +418,32 @@ export default function InstructorCourseContentPage() {
                               return null
                             })()
                           )}
+                          {/* Rejection note (if any) visible to the instructor */}
+                          {lesson.content.rejectionNote && (
+                            <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded">
+                              <div className="text-sm font-semibold text-red-700">Rejection note</div>
+                              <div className="text-sm text-red-600 mt-1">{lesson.content.rejectionNote}</div>
+                              <div className="mt-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    updateLessonContent(moduleIndex, lessonIndex, {
+                                      pendingApproval: true,
+                                      // clear rejection note when resubmitting
+                                      // instructor can update video before saving
+                                      // this only updates local state; hit Save to persist
+                                      // to server
+                                      // @ts-ignore
+                                      content: { ...(lesson.content || {}), rejectionNote: undefined },
+                                    })
+                                  }
+                                >
+                                  Resubmit for review
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 

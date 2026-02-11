@@ -15,7 +15,34 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Course not found" }, { status: 404 })
     }
 
-    return NextResponse.json({ course })
+    // Mask videoUrl for unauthorized users
+    const authHeader = request.headers.get("authorization")
+    const token = authHeader?.replace("Bearer ", "")
+    let user = null
+    if (token) {
+      user = await authService.getCurrentUser(token)
+    }
+
+    const isAdmin = user?.role === "admin"
+    const isInstructorOwner = user?.role === "instructor" && course.instructorId === user.id
+
+    const safeCourse = JSON.parse(JSON.stringify(course))
+    if (!(isAdmin || isInstructorOwner)) {
+      for (const mod of safeCourse.modules || []) {
+        for (const lesson of mod.lessons || []) {
+          if (lesson.content?.videoUrl) {
+            const url = lesson.content.videoUrl as string
+            const ytMatch = url.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([A-Za-z0-9_-]{11})/)
+            if (ytMatch && ytMatch[1]) {
+              lesson.content.videoId = ytMatch[1]
+            }
+            delete lesson.content.videoUrl
+          }
+        }
+      }
+    }
+
+    return NextResponse.json({ course: safeCourse })
   } catch (error) {
     console.error("Get course error:", error)
     return NextResponse.json({ error: "Failed to get course" }, { status: 500 })

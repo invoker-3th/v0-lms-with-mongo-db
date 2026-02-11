@@ -98,7 +98,28 @@ export default function AdminCoursesPage() {
                     <Button onClick={() => handleApprove(item.course.id, item.module.id, item.lesson.id)}>
                       Approve
                     </Button>
-                    <Button variant="outline" onClick={() => { /* optional reject flow */ }}>
+                    <Button
+                      variant="outline"
+                      onClick={async () => {
+                        const note = window.prompt("Enter rejection note for instructor:") || ""
+                        if (!note) return
+                        try {
+                          const res = await fetch(`/api/courses/${item.course.id}/lessons/${item.lesson.id}/reject`, {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${localStorage.getItem("auth-storage") ? JSON.parse(localStorage.getItem("auth-storage") || "null")?.token : ""}`,
+                            },
+                            body: JSON.stringify({ note }),
+                          })
+                          if (!res.ok) throw new Error("Reject failed")
+                          await load()
+                        } catch (err) {
+                          console.error(err)
+                          alert("Failed to send rejection note")
+                        }
+                      }}
+                    >
                       Reject
                     </Button>
                   </div>
