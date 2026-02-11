@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const all = searchParams.get("all") === "true"
 
     const db = getDB()
-    let enrollments = []
+    let enrollments: any[] = []
 
     if (all) {
       enrollments = await db.getAllEnrollments()
@@ -21,14 +21,14 @@ export async function GET(request: NextRequest) {
     } else if (courseId || courseIds) {
       const ids = courseIds ? courseIds.split(",") : [courseId as string]
       const allEnrollments = await db.getAllEnrollments()
-      enrollments = allEnrollments.filter((e) => ids.includes(e.courseId))
+      enrollments = allEnrollments.filter((e: any) => ids.includes(e.courseId))
     } else {
       return NextResponse.json({ error: "Query parameters are required" }, { status: 400 })
     }
 
     // Add course details to each enrollment
     const enrichedEnrollments = await Promise.all(
-      enrollments.map(async (enrollment) => {
+      enrollments.map(async (enrollment: any) => {
         const course = await db.getCourseById(enrollment.courseId)
         return {
           ...enrollment,

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const includeDrafts = searchParams.get("includeDrafts") === "true"
 
     const db = getDB()
-    let courses = []
+    let courses: any[] = []
     if (instructorId) {
       courses = await db.getCoursesByInstructor(instructorId)
     } else if (includeDrafts && typeof db.getAllCoursesIncludingDrafts === "function") {
@@ -22,22 +22,25 @@ export async function GET(request: NextRequest) {
       courses = await db.getAllCourses()
     }
 
+    // Filter by published and approved status
+    courses = courses.filter((c: any) => c.published && (c.approved !== false))
+
     if (!includeDrafts) {
-      courses = courses.filter((c) => c.published)
+      courses = courses.filter((c: any) => c.published)
     }
 
     if (category && category !== "all") {
-      courses = courses.filter((c) => c.category.toLowerCase() === category.toLowerCase())
+      courses = courses.filter((c: any) => c.category.toLowerCase() === category.toLowerCase())
     }
 
     if (level && level !== "all") {
-      courses = courses.filter((c) => c.level.toLowerCase() === level.toLowerCase())
+      courses = courses.filter((c: any) => c.level.toLowerCase() === level.toLowerCase())
     }
 
     if (search) {
       const query = search.toLowerCase()
       courses = courses.filter(
-        (c) =>
+        (c: any) =>
           c.title.toLowerCase().includes(query) ||
           c.description.toLowerCase().includes(query),
       )
@@ -58,7 +61,7 @@ export async function POST(request: NextRequest) {
     const db = getDB()
 
     // Generate slug from title
-    const slug = title
+    const slug = validated.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "")
@@ -72,12 +75,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create course
+    // Create course (approved defaults to false, only admin can approve)
     const course = await db.createCourse({
       ...validated,
       slug,
       thumbnail: validated.thumbnail || "/placeholder.jpg",
       published: validated.published ?? false,
+      approved: validated.approved ?? false,
       modules: validated.modules ?? [],
       totalDuration: validated.totalDuration ?? 0,
       enrollmentCount: validated.enrollmentCount ?? 0,

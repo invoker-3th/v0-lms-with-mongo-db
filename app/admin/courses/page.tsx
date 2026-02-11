@@ -1,6 +1,119 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import type { Course } from "@/lib/types"
+import { useAuthStore } from "@/lib/store"
+
+export default function AdminCoursesPage() {
+  const { token } = useAuthStore()
+  const [courses, setCourses] = useState<Course[]>([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    load()
+  }, [])
+
+  const load = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch("/api/courses?includeDrafts=true")
+      const data = await res.json()
+      setCourses(data.courses || [])
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleApprove = async (courseId: string, moduleId: string, lessonId: string) => {
+    // Find course and update the lesson flags locally, then send PUT.
+    const course = courses.find((c) => c.id === courseId)
+    if (!course) return
+
+    const updated = { ...course }
+    for (const mod of updated.modules) {
+      if (mod.id !== moduleId) continue
+      for (const lesson of mod.lessons) {
+        if (lesson.id === lessonId) {
+          lesson.approved = true
+          lesson.pendingApproval = false
+        }
+      }
+    }
+
+    try {
+      const res = await fetch(`/api/courses/${courseId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token || ""}`,
+        },
+        body: JSON.stringify({ modules: updated.modules }),
+      })
+      if (!res.ok) throw new Error("Failed to approve lesson")
+      await load()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const pendingLessons = courses.flatMap((course) =>
+    course.modules.flatMap((m) => m.lessons.map((l) => ({ course, module: m, lesson: l })))
+  ).filter((x: any) => x.lesson.pendingApproval)
+
+  return (
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-4">Course Review</h1>
+      {loading ? (
+        <p>Loading...</p>
+      ) : pendingLessons.length === 0 ? (
+        <p>No lessons pending review.</p>
+      ) : (
+        <div className="space-y-4">
+          {pendingLessons.map((item: any) => {
+            const url = item.lesson.content?.videoUrl as string | undefined
+            let embed: string | null = null
+            if (url) {
+              const m = url.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([A-Za-z0-9_-]{11})/)
+              if (m && m[1]) embed = `https://www.youtube-nocookie.com/embed/${m[1]}`
+            }
+
+            return (
+              <Card key={item.lesson.id}>
+                <CardHeader>
+                  <CardTitle>{item.course.title} — {item.lesson.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {embed ? (
+                    <div className="aspect-video mb-3">
+                      <iframe src={embed} allowFullScreen className="w-full h-full" />
+                    </div>
+                  ) : (
+                    <p>No preview available.</p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button onClick={() => handleApprove(item.course.id, item.module.id, item.lesson.id)}>
+                      Approve
+                    </Button>
+                    <Button variant="outline" onClick={() => { /* optional reject flow */ }}>
+                      Reject
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

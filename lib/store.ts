@@ -60,15 +60,19 @@ export const useCartStore = create<CartState>()(
 )
 
 interface PreferencesState {
-  currency: "NGN" | "USD" | "GBP"
-  setCurrency: (currency: "NGN" | "USD" | "GBP") => void
+  currency: "NGN" | "USD" | "EUR" | "GBP"
+  currencySelected: boolean
+  setCurrency: (currency: "NGN" | "USD" | "EUR" | "GBP") => void
+  setCurrencySelected: (selected: boolean) => void
 }
 
 export const usePreferencesStore = create<PreferencesState>()(
   persist(
     (set) => ({
       currency: "USD",
+      currencySelected: false,
       setCurrency: (currency) => set({ currency }),
+      setCurrencySelected: (selected) => set({ currencySelected: selected }),
     }),
     {
       name: "preferences-storage",

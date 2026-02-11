@@ -368,15 +368,56 @@ export default function InstructorCourseContentPage() {
                             <FileVideo className="h-4 w-4" />
                             Video URL
                           </label>
-                          <Input
-                            value={lesson.content.videoUrl || ""}
-                            onChange={(e) =>
-                              updateLessonContent(moduleIndex, lessonIndex, {
-                                videoUrl: e.target.value,
-                              })
-                            }
-                            placeholder="https://..."
-                          />
+                          <div className="flex gap-2 items-center">
+                            <Input
+                              value={lesson.content.videoUrl || ""}
+                              onChange={(e) =>
+                                updateLessonContent(moduleIndex, lessonIndex, {
+                                  videoUrl: e.target.value,
+                                })
+                              }
+                              placeholder="https://..."
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                updateLessonContent(moduleIndex, lessonIndex, { pendingApproval: true })
+                              }
+                            >
+                              Submit for review
+                            </Button>
+                          </div>
+
+                          {/* Preview (embedded) - do not display raw URL anywhere */}
+                          {lesson.content.videoUrl && (
+                            (() => {
+                              const url = lesson.content.videoUrl as string
+                              const ytMatch = url.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([A-Za-z0-9_-]{11})/)
+                              if (ytMatch && ytMatch[1]) {
+                                const videoId = ytMatch[1]
+                                return (
+                                  <div className="mt-2 aspect-video overflow-hidden rounded">
+                                    <iframe
+                                      title={lesson.title}
+                                      src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                      allowFullScreen
+                                      className="w-full h-full"
+                                    />
+                                  </div>
+                                )
+                              }
+                              if (/\.(mp4|webm|ogg)(\?|$)/i.test(url)) {
+                                return (
+                                  <video controls className="mt-2 w-full aspect-video object-contain">
+                                    <source src={url} />
+                                  </video>
+                                )
+                              }
+                              return null
+                            })()
+                          )}
                         </div>
                       )}
 
@@ -472,6 +513,8 @@ export default function InstructorCourseContentPage() {
                       <div className="flex gap-2">
                         <Badge variant="outline">{lesson.type}</Badge>
                         {lesson.isFree && <Badge className="bg-green-500">Free</Badge>}
+                        {lesson.pendingApproval && <Badge className="bg-yellow-400">Pending Review</Badge>}
+                        {lesson.approved && <Badge className="bg-green-500">Approved</Badge>}
                       </div>
                     </CardContent>
                   </Card>

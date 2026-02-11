@@ -34,10 +34,12 @@ export interface Course {
   price: {
     NGN: number
     USD: number
+    EUR: number
     GBP: number
   }
   thumbnail: string
   published: boolean
+  approved: boolean
   modules: CourseModule[]
   totalDuration: number // in minutes
   enrollmentCount: number
@@ -69,6 +71,9 @@ export interface Lesson {
     resources?: { title: string; url: string }[]
   }
   isFree: boolean
+  // Approval workflow for individual lessons
+  approved?: boolean
+  pendingApproval?: boolean
 }
 
 export interface Quiz {
@@ -108,7 +113,7 @@ export interface Enrollment {
 }
 
 export type PaymentStatus = "pending" | "completed" | "failed" | "refunded"
-export type Currency = "NGN" | "USD" | "GBP"
+export type Currency = "NGN" | "USD" | "EUR" | "GBP"
 
 export interface Payment {
   id: string
