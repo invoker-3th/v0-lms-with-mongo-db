@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import cloudinary from "@/lib/cloudinary";
+import cloudinary, { secondaryCloudinary } from "@/lib/cloudinary";
 
 /**
  * POST /api/upload
@@ -46,24 +46,58 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Upload to Cloudinary
-    const uploadResult = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          resource_type: isVideo ? "video" : isDocument ? "raw" : "image",
-          folder: "hubmovies",
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
+    // Upload to primary Cloudinary
+    const uploadPrimary = () =>
+      new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            resource_type: isVideo ? "video" : isDocument ? "raw" : "image",
+            folder: "hubmovies",
+          },
+          (error: any, result: any) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        uploadStream.end(buffer);
+      });
+
+    // Upload to secondary Cloudinary (if configured)
+    const uploadSecondary = () =>
+      new Promise(async (resolve, reject) => {
+        if (!secondaryCloudinary) return resolve(null);
+        try {
+          const uploadStream = secondaryCloudinary.uploader.upload_stream(
+            {
+              resource_type: isVideo ? "video" : isDocument ? "raw" : "image",
+              folder: "hubmovies",
+            },
+            (error: any, result: any) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          uploadStream.end(buffer);
+        } catch (err) {
+          // Don't fail overall if secondary upload fails
+          console.error("Secondary Cloudinary upload failed:", err);
+          resolve(null);
         }
-      );
-      uploadStream.end(buffer);
-    });
+      });
 
-    const url = (uploadResult as any).secure_url;
+    const primaryResult = await uploadPrimary();
+    let secondaryResult: any = null;
+    try {
+      secondaryResult = await uploadSecondary();
+    } catch (err) {
+      // swallow secondary errors
+      secondaryResult = null;
+    }
 
-    return NextResponse.json({ url });
+    const url = (primaryResult as any)?.secure_url || null;
+    const secondaryUrl = (secondaryResult as any)?.secure_url || null;
+
+    return NextResponse.json({ url, secondaryUrl });
   } catch (error) {
     console.error("Failed to upload file:", error);
     return NextResponse.json(

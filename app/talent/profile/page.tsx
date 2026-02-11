@@ -36,6 +36,8 @@ export default function TalentProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const portfolioInputRef = useRef<HTMLInputElement>(null);
   const cvInputRef = useRef<HTMLInputElement>(null);
+  const idFrontInputRef = useRef<HTMLInputElement>(null);
+  const idBackInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -55,6 +57,8 @@ export default function TalentProfilePage() {
     experience: [] as string[],
     portfolio: [] as string[],
     cv: "",
+    idCardFront: "",
+    idCardBack: "",
     locationCity: "",
     locationState: "",
     locationCountry: "",
@@ -84,6 +88,8 @@ export default function TalentProfilePage() {
             experience: data.profile.experience || [],
             portfolio: data.profile.portfolio || [],
             cv: data.profile.cv || "",
+            idCardFront: data.profile.idCardFront || "",
+            idCardBack: data.profile.idCardBack || "",
             locationCity: data.profile.locationCity || "",
             locationState: data.profile.locationState || "",
             locationCountry: data.profile.locationCountry || "",
@@ -274,6 +280,50 @@ export default function TalentProfilePage() {
     }
   };
 
+  const [idFrontPreview, setIdFrontPreview] = useState<string | null>(null);
+  const [idBackPreview, setIdBackPreview] = useState<string | null>(null);
+
+  const handleIdUpload = async (e: React.ChangeEvent<HTMLInputElement>, side: "front" | "back") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+    if (!allowedTypes.includes(file.type)) {
+      setError("Invalid file type. Only JPEG/PNG images are allowed for ID.");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError("ID image too large. Maximum size is 10MB.");
+      return;
+    }
+
+    setError("");
+
+    try {
+      const form = new FormData();
+      form.append("file", file);
+
+      const res = await fetch("/api/upload", { method: "POST", body: form });
+      if (res.ok) {
+        const data = await res.json();
+        const url = data.url;
+        if (side === "front") {
+          setFormData((prev) => ({ ...prev, idCardFront: url }));
+          setIdFrontPreview(url);
+        } else {
+          setFormData((prev) => ({ ...prev, idCardBack: url }));
+          setIdBackPreview(url);
+        }
+      } else {
+        setError("Failed to upload ID image. Please try again.");
+      }
+    } catch (err) {
+      console.error("Failed to upload ID image:", err);
+      setError("Failed to upload ID image. Please try again.");
+    }
+  };
+
   const handleRemovePortfolioItem = (url: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -320,6 +370,13 @@ export default function TalentProfilePage() {
     setSaving(true);
     setError("");
     setSuccess(false);
+
+    // Require ID front and back images before saving
+    if (!formData.idCardFront || !formData.idCardBack) {
+      setError("Please upload both front and back images of your ID card. Ensure they are well-lit and readable.");
+      setSaving(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/talent/profile", {
@@ -700,6 +757,39 @@ export default function TalentProfilePage() {
                   )}
                   <input ref={cvInputRef} type="file" accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={handleCvUpload} className="hidden" />
                   <button type="button" onClick={() => cvInputRef.current?.click()} className="px-4 py-2 bg-white/5 border border-white/10 text-white text-sm rounded hover:bg-white/10 transition">{uploadingPortfolio ? "Uploading..." : formData.cv ? "Change CV" : "Upload CV"}</button>
+                </div>
+              </div>
+
+              {/* ID Card Upload (front & back) - required */}
+              <div className="mb-4 mt-4">
+                <label className="block text-sm text-[var(--text-secondary)] mb-2 font-body">ID Card (Front & Back) <span className="text-xs text-red-400">(required)</span></label>
+                <p className="text-xs text-[var(--text-secondary)] mb-2">Ensure images are well-lit, not overexposed, and the text is readable on both sides.</p>
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="flex flex-col items-start gap-2">
+                    {formData.idCardFront ? (
+                      <img src={formData.idCardFront} alt="ID front" className="w-40 h-28 object-cover border rounded" />
+                    ) : (
+                      <div className="w-40 h-28 bg-white/5 border border-white/10 rounded flex items-center justify-center text-sm text-[var(--text-secondary)]">Front not uploaded</div>
+                    )}
+                    <input ref={idFrontInputRef} type="file" accept="image/jpeg,image/jpg,image/png" onChange={(e) => handleIdUpload(e, "front")} className="hidden" />
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => idFrontInputRef.current?.click()} className="px-3 py-2 bg-white/5 border border-white/10 text-white rounded">{formData.idCardFront ? "Change Front" : "Upload Front"}</button>
+                      {formData.idCardFront && <button type="button" onClick={() => { setFormData({ ...formData, idCardFront: "" }); setIdFrontPreview(null); }} className="px-3 py-2 bg-red-600 text-white rounded">Remove</button>}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-start gap-2">
+                    {formData.idCardBack ? (
+                      <img src={formData.idCardBack} alt="ID back" className="w-40 h-28 object-cover border rounded" />
+                    ) : (
+                      <div className="w-40 h-28 bg-white/5 border border-white/10 rounded flex items-center justify-center text-sm text-[var(--text-secondary)]">Back not uploaded</div>
+                    )}
+                    <input ref={idBackInputRef} type="file" accept="image/jpeg,image/jpg,image/png" onChange={(e) => handleIdUpload(e, "back")} className="hidden" />
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => idBackInputRef.current?.click()} className="px-3 py-2 bg-white/5 border border-white/10 text-white rounded">{formData.idCardBack ? "Change Back" : "Upload Back"}</button>
+                      {formData.idCardBack && <button type="button" onClick={() => { setFormData({ ...formData, idCardBack: "" }); setIdBackPreview(null); }} className="px-3 py-2 bg-red-600 text-white rounded">Remove</button>}
+                    </div>
+                  </div>
                 </div>
               </div>
               <input

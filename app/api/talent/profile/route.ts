@@ -117,6 +117,8 @@ export async function PATCH(req: Request) {
       experience,
       portfolio,
       cv,
+      idCardFront,
+      idCardBack,
       locationCity,
       locationState,
       locationCountry,
@@ -136,6 +138,8 @@ export async function PATCH(req: Request) {
     if (experience !== undefined) updateData.experience = experience;
     if (portfolio !== undefined) updateData.portfolio = portfolio;
     if (cv !== undefined) updateData.cv = cv;
+    if (idCardFront !== undefined) updateData.idCardFront = idCardFront;
+    if (idCardBack !== undefined) updateData.idCardBack = idCardBack;
     if (locationCity !== undefined) updateData.locationCity = locationCity;
     if (locationState !== undefined) updateData.locationState = locationState;
     if (locationCountry !== undefined) updateData.locationCountry = locationCountry;
@@ -181,6 +185,8 @@ export async function PATCH(req: Request) {
         experience: user.experience || [],
         portfolio: user.portfolio || [],
         cv: user.cv || null,
+        idCardFront: user.idCardFront || null,
+        idCardBack: user.idCardBack || null,
         locationCity: user.locationCity || "",
         locationState: user.locationState || "",
         locationCountry: user.locationCountry || "",

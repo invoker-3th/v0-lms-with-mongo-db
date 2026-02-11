@@ -34,6 +34,8 @@ const UserSchema = new mongoose.Schema(
     experience: [{ type: String }],
     portfolio: [{ type: String }], // Array of media URLs
     cv: { type: String }, // CV / resume URL
+    idCardFront: { type: String }, // ID card front image URL
+    idCardBack: { type: String }, // ID card back image URL
     // Location (talent)
     locationCity: { type: String },
     locationState: { type: String },
