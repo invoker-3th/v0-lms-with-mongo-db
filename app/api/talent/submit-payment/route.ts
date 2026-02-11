@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/user";
 import AuditLog from "@/models/audit-log";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { sendEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -15,7 +16,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { paymentMethod, paymentReference } = body;
 
-    if (!paymentMethod || !["ETH", "BTC"].includes(paymentMethod)) {
+    // Support ETH, BTC, APPLE (Apple Pay) and GIFT (gift card via a different flow)
+    if (!paymentMethod || !["ETH", "BTC", "APPLE", "GIFT"].includes(paymentMethod)) {
       return NextResponse.json({ error: "Invalid payment method" }, { status: 400 });
     }
 
@@ -69,6 +71,33 @@ export async function POST(req: Request) {
         submittedAt: new Date().toISOString(),
       },
     });
+
+    // Notify admins by email (addresses configured in ADMIN_ACCOUNTS env var)
+    try {
+      const adminsRaw = process.env.ADMIN_ACCOUNTS || process.env.EMAIL_SERVER_USER || "";
+      const adminList = adminsRaw.split(",").map((s) => s.trim()).filter(Boolean);
+      if (adminList.length > 0) {
+        const adminUrl = `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/admin/payments`;
+        const subject = `Talent Payment Submitted: ${user.name || user.email}`;
+        const html = `
+          <p>A talent has submitted a payment for profile registration.</p>
+          <ul>
+            <li><strong>Name:</strong> ${user.name || "—"}</li>
+            <li><strong>Email:</strong> ${user.email}</li>
+            <li><strong>Method:</strong> ${paymentMethod}</li>
+            <li><strong>Reference:</strong> ${paymentReference.trim()}</li>
+            <li><strong>Submitted At:</strong> ${new Date().toISOString()}</li>
+          </ul>
+          <p>Review and confirm the payment in the admin panel: <a href="${adminUrl}">${adminUrl}</a></p>
+        `;
+
+        await sendEmail({ to: adminList, subject, html });
+      } else {
+        console.warn("No admin emails configured in ADMIN_ACCOUNTS or EMAIL_SERVER_USER; skipping admin notification.");
+      }
+    } catch (emailErr) {
+      console.error("Failed to send admin notification for payment submission:", emailErr);
+    }
 
     return NextResponse.json({
       success: true,

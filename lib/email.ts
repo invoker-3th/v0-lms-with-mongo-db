@@ -4,7 +4,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@hubmovies-cd.com";
 
 interface EmailOptions {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
 }
@@ -15,7 +15,7 @@ interface EmailOptions {
  */
 export async function sendEmail({ to, subject, html }: EmailOptions): Promise<boolean> {
   const context = {
-    to,
+    to: Array.isArray(to) ? to.join(',') : to,
     subject,
     from: FROM_EMAIL,
     hasApiKey: Boolean(process.env.RESEND_API_KEY),

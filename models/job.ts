@@ -14,6 +14,12 @@ const JobSchema = new mongoose.Schema(
       enum: ["open", "closed"],
       default: "open",
     },
+    approvalStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+      index: true,
+    },
     // Admin actions
     hidden: { type: Boolean, default: false, index: true }, // Shadow-hidden by admin
     closedEarly: { type: Boolean, default: false }, // Closed early by admin

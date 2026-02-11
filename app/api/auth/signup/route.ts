@@ -8,7 +8,7 @@ import { randomUUID } from "crypto";
 
 export async function POST(req: Request) {
   try {
-    const { email, password, role } = await req.json();
+    const { email, password, role, redirect } = await req.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -47,6 +47,7 @@ export async function POST(req: Request) {
       role: userRole,
       emailVerified: null, // Will be verified when they click the email link
       verificationTier: "BASIC",
+      pendingReturnUrl: redirect || null,
     });
 
     // Generate 6-digit OTP and store token (same pattern as /api/auth/send-otp)

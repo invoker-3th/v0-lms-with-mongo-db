@@ -154,6 +154,7 @@ export async function POST(req: Request) {
     const activeJobsCount = await Job.countDocuments({
       directorId,
       status: "open",
+      approvalStatus: "approved",
     });
 
     if (activeJobsCount >= capabilities.maxActiveJobs) {
@@ -178,6 +179,7 @@ export async function POST(req: Request) {
       deadline: deadline || "",
       description: description || "",
       status: "open",
+      approvalStatus: "pending",
     });
 
     // Update director trust score incrementally (job posted: +10)

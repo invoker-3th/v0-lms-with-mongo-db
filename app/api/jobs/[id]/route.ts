@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import Job from "@/models/job";
 import User from "@/models/user";
 import { getTrustLevel, getDirectorCapabilities } from "@/lib/director-trust";
+import { auth } from "@/app/api/auth/[...nextauth]/route";
 
 /**
  * GET /api/jobs/[id]
@@ -20,6 +21,22 @@ export async function GET(
 
     if (!job || job.hidden) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+
+    // Only allow public access to approved jobs. Directors and admins can view their own or any job.
+    if ((job as any).approvalStatus !== "approved") {
+      // Check session to allow directors/admins to view
+      try {
+        const session = await auth();
+        const sessionUser = session?.user as any;
+        const isAdmin = sessionUser?.role === "ADMIN";
+        const isDirectorOwner = sessionUser?.id === job.directorId;
+        if (!isAdmin && !isDirectorOwner) {
+          return NextResponse.json({ error: "Job not found" }, { status: 404 });
+        }
+      } catch (err) {
+        return NextResponse.json({ error: "Job not found" }, { status: 404 });
+      }
     }
 
     const director = await User.findById(job.directorId);

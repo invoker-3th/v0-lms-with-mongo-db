@@ -52,8 +52,8 @@ export async function GET(req: Request) {
     }
     }
 
-    // Fetch all open jobs, sorted by deadline (soonest first)
-    const jobs = await Job.find({ status: "open", hidden: { $ne: true } })
+    // Fetch all open & approved jobs, sorted by deadline (soonest first)
+    const jobs = await Job.find({ status: "open", hidden: { $ne: true }, approvalStatus: "approved" })
       .sort({ deadline: 1, createdAt: -1 })
       .limit(100); // Limit to prevent performance issues
 

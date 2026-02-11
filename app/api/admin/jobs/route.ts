@@ -24,6 +24,7 @@ export async function GET(req: Request) {
     const directorId = searchParams.get("directorId");
     const status = searchParams.get("status");
     const hidden = searchParams.get("hidden");
+    const approvalStatus = searchParams.get("approvalStatus");
 
     await connectDB();
 
@@ -31,6 +32,7 @@ export async function GET(req: Request) {
     if (directorId) query.directorId = directorId;
     if (status) query.status = status;
     if (hidden !== null) query.hidden = hidden === "true";
+    if (approvalStatus) query.approvalStatus = approvalStatus;
 
     const jobs = await Job.find(query).sort({ createdAt: -1 }).limit(100);
 
@@ -48,6 +50,7 @@ export async function GET(req: Request) {
           deadline: job.deadline,
           description: job.description,
           status: job.status,
+          approvalStatus: (job as any).approvalStatus || 'pending',
           hidden: job.hidden,
           closedEarly: job.closedEarly,
           adminActionReason: job.adminActionReason,

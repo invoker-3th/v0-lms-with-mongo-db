@@ -1,3 +1,107 @@
+# HubMovies — Global Casting Marketplace
+
+This repository is a production-ready Next.js (App Router) application focused on a cinematic, trust-driven marketplace for casting directors and talent.
+
+## Current Snapshot (2026-02-11)
+- Next.js App Router + TypeScript
+- MongoDB (Mongoose) backend
+- NextAuth for authentication (JWT strategy)
+- Admin panel with audit logging and job moderation
+
+## Key Capabilities
+- Role-based auth: TALENT, DIRECTOR, ADMIN with middleware enforcement
+- OTP-first signup & verification (6-digit OTPs sent by email)
+- Talent onboarding 
+- Media upload API that mirrors to a secondary Cloudinary account (if configured) and returns `{ url, secondaryUrl }`
+- Job posting flow: director-created jobs are created as `pending` and require admin approval before public listing
+- Admin job actions: `APPROVE` (publish) / `REJECT` (close) with audit logs
+- Real-time-like features: notification bell, unread counts, messaging (director → talent)
+
+## Architecture & File Layout (high level)
+- `app/` — Next.js App Router pages and API routes
+- `app/api/` — Server routes (auth, jobs, upload, admin, talent, director)
+- `lib/` — Utilities: `cloudinary.ts`, `email.ts`, `mongodb.ts`, `profile-completion.ts`, etc.
+- `models/` — Mongoose models (`user.ts`, `job.ts`, `application.ts`, `audit-log.ts`, etc.)
+- `components/` — Client & server UI components (header, hero, modals, admin panels)
+
+See the app/ tree for full structure.
+
+## Recent, Important Changes (summary)
+- Replaced email-link verification flow with OTP-first flow.
+  - `/app/auth/verify-email/page.tsx` removed.
+  - `app/api/auth/send-otp/route.ts`, `signup`, and `resend-verification` return `emailSent` diagnostics.
+- Talent ID verification fields added.
+  - `models/user.ts` now includes `idCardFront` and `idCardBack`.
+  - `app/talent/profile/page.tsx` implements upload UI and validation (image type + size checks, preview).
+- Job moderation / approval workflow.
+  - `models/job.ts` includes `approvalStatus` (`pending|approved|rejected`) defaulting to `pending` for director-created jobs.
+  - Public `GET /api/jobs` returns only `approvalStatus: "approved"` jobs.
+  - Admin route `/api/admin/jobs/[id]/actions` supports `APPROVE` and `REJECT`, and records `AuditLog` entries.
+  - Admin UI at `/admin/jobs` includes Approve & Post and Reject actions.
+- Apply flow hardening.
+  - `ApplyFlowModal` now checks session and redirects unauthenticated users to `/auth` before calling protected APIs.
+
+## Environment Variables (required / recommended)
+- `MONGODB_URI` — MongoDB connection string
+- `NEXTAUTH_SECRET` — NextAuth secret
+- `RESEND_API_KEY` — (optional) Resend email key; endpoints return `emailSent` diagnostics if missing
+- Primary Cloudinary:
+  - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- Optional Secondary Cloudinary (mirroring):
+  - `CLOUDINARY_CLOUD_NAME_2`, `CLOUDINARY_API_KEY_2`, `CLOUDINARY_API_SECRET_2`
+
+Set these in `.env.local` for local development.
+
+## How to Run (dev)
+1. Install dependencies
+   - `pnpm install` (or `npm install`)
+2. Add `.env.local` with required vars
+3. Start dev server
+   - `pnpm dev` (default port 3000)
+
+## Key API Endpoints (not exhaustive)
+- `POST /api/auth/send-otp` — send 6-digit OTP, returns `{ ok, emailSent }`
+- `POST /api/auth/signup` — creates user and triggers OTP send (returns `emailSent`)
+- `POST /api/auth/verify-otp` — verify OTP and mark `emailVerified`
+- `POST /api/upload` — upload media, returns `{ url, secondaryUrl? }`
+- `GET /api/jobs` — public jobs listing (only `approvalStatus: "approved"`)
+- `POST /api/director/jobs` — creates job with `approvalStatus: "pending"`
+- `POST /api/admin/jobs/[id]/actions` — admin actions: `APPROVE` / `REJECT`
+
+## Notable Modified / Created Files (recent)
+- `middleware.ts` — updated to support OTP-first flow and admin routing
+- `lib/cloudinary.ts` — added optional secondary client
+- `app/api/upload/route.ts` — mirrored Cloudinary uploads, returns `secondaryUrl`
+- `app/api/auth/send-otp/route.ts` — OTP generation and `emailSent` diagnostics
+- `app/api/auth/signup/route.ts` and `resend-verification` — switched to OTP flow
+- `models/job.ts` — added `approvalStatus`
+- `app/api/jobs/route.ts` & `app/api/jobs/[id]/route.ts` — enforce `approvalStatus` visibility rules
+- `app/api/admin/jobs/[id]/actions/route.ts` — admin APPROVE/REJECT actions + AuditLog
+- `app/admin/jobs/page.tsx` — admin job list with Approve/Reject UI
+- `app/api/director/jobs/route.ts` — director job creation now counts only approved open jobs toward limit
+
+If you want a full list of every changed file, I can run a git diff or search for the recent edits.
+
+## Testing & Validation Notes
+- Email sending relies on `RESEND_API_KEY`; `emailSent` values in responses help diagnose delivery issues.
+- Secondary Cloudinary requires correct cloud name and credentials; secondary upload failures are logged but not fatal.
+- ID uploads are enforced client-side before allowing profile save; adjust UX if you prefer soft enforcement.
+
+## Next Recommended Tasks
+1. Run the app locally and verify OTP email delivery (check `emailSent`) and Cloudinary secondary uploads (test `/api/upload`).
+2. Optionally persist `secondaryUrl` to user/media DB records if you want mirrored backups saved.
+3. Add integration tests for OTP flows and admin job approval actions.
+
+---
+
+If you'd like, I can (pick one):
+- run a quick scan to list every edited file since the last commit,
+- persist `secondaryUrl` to a media backup field on the `User` or `Application` models, or
+- update the `/app/jobs/page.tsx` guest signup sidebar copy.
+
+---
+
+Last updated: 2026-02-11
 HubMovies — Global Casting Marketplace
 UI Prototype v0.1 | Live Demo | Production-grade cinematic interface
 

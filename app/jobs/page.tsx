@@ -199,7 +199,52 @@ export default function JobsListingPage() {
       {/* Fixed Cinematic Header */}
       <div className="fixed top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/80 to-transparent z-20 pointer-events-none" />
 
-      <TalentSidebar />
+      {/* Left sidebar for signed-in talents; otherwise show guest signup prompt */}
+      {user ? (
+        <TalentSidebar />
+      ) : (
+        <>
+          {/* Desktop sidebar */}
+          <aside className="hidden md:flex flex-col w-56 bg-black/30 border-r border-white/10 h-screen fixed top-0 left-0 pt-6 md:pt-8 px-4 z-30">
+            <div className="mb-4">
+              <div className="w-40 h-24 bg-white/5 border border-white/10 rounded flex items-center justify-center text-sm text-[var(--text-secondary)]">Company / Job Image</div>
+            </div>
+            <div className="mb-4">
+              <p className="text-white font-medium">Sign up to apply</p>
+              <p className="text-[var(--text-secondary)] text-sm">Create a Talent account to view and apply for jobs.</p>
+              <div className="mt-3">
+                <button
+                  onClick={() => window.location.assign('/signup?role=TALENT')}
+                  className="w-full px-4 py-2 bg-[var(--accent-gold)] text-black rounded"
+                >
+                  Sign Up as Talent
+                </button>
+              </div>
+            </div>
+          </aside>
+
+          {/* Mobile top bar */}
+          <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur border-b border-white/10 p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-10 bg-white/5 border border-white/10 rounded flex items-center justify-center text-sm text-[var(--text-secondary)]">Jobs</div>
+                <div>
+                  <p className="text-sm text-white font-medium">Sign up to apply</p>
+                  <p className="text-xs text-[var(--text-secondary)]">Create a Talent account to view and apply for jobs.</p>
+                  <div className="mt-2">
+                    <button
+                      onClick={() => window.location.assign('/signup?role=TALENT')}
+                      className="px-3 py-2 bg-[var(--accent-gold)] text-black rounded text-sm"
+                    >
+                      Sign Up
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 pb-24 sm:pb-12 w-full md:pl-56">
         {/* Page Header */}
@@ -391,6 +436,13 @@ export default function JobsListingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05, duration: 0.3, ease: "easeOut" }}
                     onClick={() => {
+                      if (!user) {
+                        // redirect guest to signup with return url for this job
+                        const redirect = `/jobs/${job._id}`;
+                        window.location.assign(`/signup?role=TALENT&redirect=${encodeURIComponent(redirect)}`);
+                        return;
+                      }
+
                       if (!hasApplied && !isLocked) {
                         setSelectedJob(job);
                       }

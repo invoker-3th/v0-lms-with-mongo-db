@@ -14,6 +14,7 @@ type Job = {
   location: string;
   budget: string;
   deadline: string;
+  approvalStatus?: string;
   status: string;
   hidden: boolean;
   closedEarly: boolean;
@@ -94,6 +95,28 @@ export default function AdminJobsPage() {
       }
     } catch (err) {
       console.error("Failed to perform job action:", err);
+      alert("Network error. Please try again.");
+    }
+  };
+
+  const handleAdminApprove = async (jobId: string, approve: boolean) => {
+    const action = approve ? "APPROVE" : "REJECT";
+    const reason = approve ? "Approved by admin" : prompt("Reason for rejection:") || "Rejected by admin";
+    try {
+      const res = await fetch(`/api/admin/jobs/${jobId}/actions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, reason }),
+      });
+
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        const errorData = await res.json();
+        alert(errorData.error || "Failed to perform action");
+      }
+    } catch (err) {
+      console.error(err);
       alert("Network error. Please try again.");
     }
   };
@@ -202,6 +225,13 @@ export default function AdminJobsPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-xl font-semibold text-white">{job.title}</h3>
+                      {job.approvalStatus && (
+                        <span className={`px-2 py-1 text-xs rounded border ml-2 ${
+                          job.approvalStatus === 'pending' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' : job.approvalStatus === 'approved' ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-red-500/20 text-red-300 border-red-500/30'
+                        }`}>
+                          {job.approvalStatus.toUpperCase()}
+                        </span>
+                      )}
                       {job.hidden && (
                         <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded border border-red-500/30">
                           HIDDEN
@@ -251,6 +281,23 @@ export default function AdminJobsPage() {
                   >
                     View Applications
                   </button>
+                  {/* Approve / Reject for pending jobs */}
+                  {job.approvalStatus === "pending" && (
+                    <>
+                      <button
+                        onClick={() => handleAdminApprove(job._id, true)}
+                        className="px-4 py-2 bg-[var(--accent-gold)] text-black rounded hover:opacity-90 transition"
+                      >
+                        Approve & Post
+                      </button>
+                      <button
+                        onClick={() => handleAdminApprove(job._id, false)}
+                        className="px-4 py-2 border border-red-500 text-red-400 rounded hover:bg-red-500/10 transition"
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
                   {job.status === "open" && (
                     <button
                       onClick={() => handleJobAction(job._id, "CLOSE_EARLY")}

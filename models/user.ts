@@ -48,6 +48,8 @@ const UserSchema = new mongoose.Schema(
     paymentMethod: { type: String },
     paymentReference: { type: String },
     paymentAt: { type: Date },
+    // Pending return URL to redirect user after unlock
+    pendingReturnUrl: { type: String },
     // Admin restrictions
     frozen: { type: Boolean, default: false, index: true }, // Account frozen (talent/director)
     shadowLimited: { type: Boolean, default: false }, // Reduced visibility (talent)

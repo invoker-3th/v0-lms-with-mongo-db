@@ -58,6 +58,22 @@ export async function POST(
         job.adminActionBy = admin._id.toString();
         actionType = "JOB_CLOSED_EARLY";
         break;
+      case "APPROVE":
+        job.approvalStatus = "approved";
+        job.adminActionReason = reason.trim();
+        job.adminActionBy = admin._id.toString();
+        // Make job visible/open when approved
+        job.status = "open";
+        actionType = "JOB_APPROVED";
+        break;
+      case "REJECT":
+        job.approvalStatus = "rejected";
+        job.adminActionReason = reason.trim();
+        job.adminActionBy = admin._id.toString();
+        // Close job when rejected
+        job.status = "closed";
+        actionType = "JOB_REJECTED";
+        break;
       case "HIDE":
         job.hidden = true;
         job.adminActionReason = reason.trim();

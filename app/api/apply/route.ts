@@ -166,7 +166,7 @@ export async function POST(req: Request) {
     cloudinary.uploader
       .upload_stream(
         { resource_type: resourceType },
-        (err, result) => {
+        (err: any, result: any) => {
           if (err) {
             reject(err);
             return;
