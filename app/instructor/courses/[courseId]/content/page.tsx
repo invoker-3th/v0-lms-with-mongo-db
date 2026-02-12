@@ -382,7 +382,10 @@ export default function InstructorCourseContentPage() {
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                updateLessonContent(moduleIndex, lessonIndex, { pendingApproval: true })
+                                updateLesson(moduleIndex, lessonIndex, {
+                                  pendingApproval: true,
+                                  approved: false,
+                                })
                               }
                             >
                               Submit for review
@@ -427,17 +430,15 @@ export default function InstructorCourseContentPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() =>
-                                    updateLessonContent(moduleIndex, lessonIndex, {
+                                  onClick={() => {
+                                    updateLesson(moduleIndex, lessonIndex, {
                                       pendingApproval: true,
-                                      // clear rejection note when resubmitting
-                                      // instructor can update video before saving
-                                      // this only updates local state; hit Save to persist
-                                      // to server
-                                      // @ts-ignore
-                                      content: { ...(lesson.content || {}), rejectionNote: undefined },
+                                      approved: false,
                                     })
-                                  }
+                                    updateLessonContent(moduleIndex, lessonIndex, {
+                                      rejectionNote: undefined,
+                                    })
+                                  }}
                                 >
                                   Resubmit for review
                                 </Button>

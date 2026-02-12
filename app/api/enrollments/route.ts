@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { ZodError } from "zod"
 import { getDB } from "@/lib/db"
 import { enrollmentCreateSchema } from "@/lib/validation"
+import { maskCourseForUser } from "@/lib/utils/course-masking"
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,14 +27,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Query parameters are required" }, { status: 400 })
     }
 
-    // Add course details to each enrollment
+    // Add course details to each enrollment and mask video URLs for non-privileged users
+    const authHeader = request.headers.get("authorization")
+    const token = authHeader?.replace("Bearer ", "")
+    let user = null
+    if (token) {
+      try {
+        const { authService } = await import("@/lib/auth")
+        user = await authService.getCurrentUser(token)
+      } catch (e) {
+        user = null
+      }
+    }
+
     const enrichedEnrollments = await Promise.all(
       enrollments.map(async (enrollment: any) => {
         const course = await db.getCourseById(enrollment.courseId)
-        return {
-          ...enrollment,
-          course,
-        }
+        if (!course) return { ...enrollment, course }
+
+        const safeCourse = maskCourseForUser(course, user)
+
+        return { ...enrollment, course: safeCourse }
       })
     )
 

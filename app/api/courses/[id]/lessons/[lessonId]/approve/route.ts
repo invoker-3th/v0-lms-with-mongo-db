@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { authService } from "@/lib/auth"
 import { getDB } from "@/lib/db"
-import { sendLessonRejectedEmail } from "@/lib/email"
+import { sendLessonApprovedEmail } from "@/lib/email"
 
 export async function POST(
   request: NextRequest,
@@ -10,10 +10,8 @@ export async function POST(
   try {
     const resolvedParams = await params
     const { id, lessonId } = resolvedParams
-    const body = await request.json()
-    const note = (body.note || "").toString()
 
-    const authHeader = (request.headers.get("authorization") || "")
+    const authHeader = request.headers.get("authorization") || ""
     const token = authHeader.replace("Bearer ", "")
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
@@ -32,9 +30,10 @@ export async function POST(
       for (const lesson of mod.lessons || []) {
         if (lesson.id === lessonId) {
           lesson.pendingApproval = false
-          lesson.approved = false
-          lesson.content = lesson.content || {}
-          lesson.content.rejectionNote = note
+          lesson.approved = true
+          if (lesson.content) {
+            delete lesson.content.rejectionNote
+          }
           lessonTitle = lesson.title
           changed = true
         }
@@ -49,21 +48,20 @@ export async function POST(
     const instructor = await db.findUserById(course.instructorId)
     if (instructor?.email) {
       try {
-        await sendLessonRejectedEmail({
+        await sendLessonApprovedEmail({
           to: instructor.email,
           name: instructor.name || "Instructor",
           courseTitle: course.title,
           lessonTitle: lessonTitle || "Lesson",
-          note,
         })
       } catch (emailError) {
-        console.error("Failed to send lesson rejection email:", emailError)
+        console.error("Failed to send lesson approval email:", emailError)
       }
     }
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Reject lesson error:", error)
+    console.error("Approve lesson error:", error)
     return NextResponse.json({ error: "Invalid request" }, { status: 400 })
   }
 }

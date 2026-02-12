@@ -28,30 +28,14 @@ export default function AdminCoursesPage() {
     }
   }
 
-  const handleApprove = async (courseId: string, moduleId: string, lessonId: string) => {
-    // Find course and update the lesson flags locally, then send PUT.
-    const course = courses.find((c) => c.id === courseId)
-    if (!course) return
-
-    const updated = { ...course }
-    for (const mod of updated.modules) {
-      if (mod.id !== moduleId) continue
-      for (const lesson of mod.lessons) {
-        if (lesson.id === lessonId) {
-          lesson.approved = true
-          lesson.pendingApproval = false
-        }
-      }
-    }
-
+  const handleApprove = async (courseId: string, lessonId: string) => {
     try {
-      const res = await fetch(`/api/courses/${courseId}`, {
-        method: "PUT",
+      const res = await fetch(`/api/courses/${courseId}/lessons/${lessonId}/approve`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token || ""}`,
         },
-        body: JSON.stringify({ modules: updated.modules }),
       })
       if (!res.ok) throw new Error("Failed to approve lesson")
       await load()
@@ -95,7 +79,7 @@ export default function AdminCoursesPage() {
                     <p>No preview available.</p>
                   )}
                   <div className="flex gap-2">
-                    <Button onClick={() => handleApprove(item.course.id, item.module.id, item.lesson.id)}>
+                    <Button onClick={() => handleApprove(item.course.id, item.lesson.id)}>
                       Approve
                     </Button>
                     <Button
@@ -132,6 +116,7 @@ export default function AdminCoursesPage() {
     </div>
   )
 }
+/*
 "use client"
 
 import { useEffect, useState } from "react"
@@ -265,3 +250,4 @@ export default function AdminCoursesPage() {
     </div>
   )
 }
+*/

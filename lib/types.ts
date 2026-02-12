@@ -114,7 +114,7 @@ export interface Enrollment {
   completedAt?: Date
 }
 
-export type PaymentStatus = "pending" | "completed" | "failed" | "refunded"
+export type PaymentStatus = "pending" | "completed" | "failed" | "refunded" | "success"
 export type Currency = "NGN" | "USD" | "EUR" | "GBP"
 
 export interface Payment {

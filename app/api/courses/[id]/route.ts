@@ -3,10 +3,14 @@ import { ZodError } from "zod"
 import { getDB } from "@/lib/db"
 import { courseUpdateSchema } from "@/lib/validation"
 import { authService } from "@/lib/auth"
+import { maskCourseForUser } from "@/lib/utils/course-masking"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
-    const { id } = params
+    const { id } = await params
     const db = getDB()
 
     const course = await db.getCourseById(id)
@@ -23,24 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       user = await authService.getCurrentUser(token)
     }
 
-    const isAdmin = user?.role === "admin"
-    const isInstructorOwner = user?.role === "instructor" && course.instructorId === user.id
-
-    const safeCourse = JSON.parse(JSON.stringify(course))
-    if (!(isAdmin || isInstructorOwner)) {
-      for (const mod of safeCourse.modules || []) {
-        for (const lesson of mod.lessons || []) {
-          if (lesson.content?.videoUrl) {
-            const url = lesson.content.videoUrl as string
-            const ytMatch = url.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([A-Za-z0-9_-]{11})/)
-            if (ytMatch && ytMatch[1]) {
-              lesson.content.videoId = ytMatch[1]
-            }
-            delete lesson.content.videoUrl
-          }
-        }
-      }
-    }
+    const safeCourse = maskCourseForUser(course, user)
 
     return NextResponse.json({ course: safeCourse })
   } catch (error) {
@@ -49,9 +36,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
     
     // Get auth token from headers
@@ -109,9 +99,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
-    const { id } = params
+    const { id } = await params
 
     // Get auth token from headers
     const authHeader = request.headers.get("authorization")
